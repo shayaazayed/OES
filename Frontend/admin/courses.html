@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة الدورات - ExamPro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header style="background: white; padding: 1rem 0; border-radius: 16px; margin-bottom: 2rem; box-shadow: var(--shadow-lg);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <button class="btn btn-secondary" onclick="window.location.href='dashboard.html'">
+                        <i class="fas fa-arrow-right"></i>
+                        رجوع
+                    </button>
+                    <div>
+                        <h1 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-800); margin: 0;">إدارة الدورات</h1>
+                        <p style="color: var(--gray-600); margin: 0; font-size: 0.9rem;">إنشاء وإدارة الدورات التعليمية</p>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <button class="btn btn-primary" onclick="showAddCourseModal()">
+                        <i class="fas fa-plus"></i>
+                        إنشاء دورة جديدة
+                    </button>
+                    <button class="btn btn-secondary" onclick="performLogout()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        تسجيل الخروج
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Courses Grid -->
+        <div id="coursesContainer" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+            <!-- Courses will be loaded here -->
+        </div>
+    </div>
+
+    <!-- Add Course Modal -->
+    <div id="addCourseModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 2rem; border-radius: 16px; width: 90%; max-width: 500px;">
+            <h3 style="margin-bottom: 1.5rem;">إنشاء دورة جديدة</h3>
+            <form id="addCourseForm">
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">اسم الدورة</label>
+                    <input type="text" id="courseName" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">الوصف</label>
+                    <textarea id="courseDescription" rows="3" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;"></textarea>
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">المعلم</label>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <select id="courseTeacher" required style="flex: 1; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                            <option value="">اختر المعلم</option>
+                            <!-- Teachers will be loaded here -->
+                        </select>
+                        <button type="button" class="btn btn-secondary" onclick="window.open('users.html', '_blank')" style="white-space: nowrap;">
+                            <i class="fas fa-user-plus"></i>
+                            إضافة معلم
+                        </button>
+                    </div>
+                    <p style="color: var(--gray-600); font-size: 0.8rem; margin-top: 0.25rem;">إذا لم يظهر المعلم، اضغط على "إضافة معلم" لإنشاء معلم جديد</p>
+                </div>
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">المدة (بالأسبوع)</label>
+                    <input type="number" id="courseDuration" min="1" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                </div>
+                <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="hideAddCourseModal()">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">إنشاء دورة</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Course Modal -->
+    <div id="editCourseModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 2rem; border-radius: 16px; width: 90%; max-width: 500px;">
+            <h3 style="margin-bottom: 1.5rem;">تعديل دورة</h3>
+            <form id="editCourseForm">
+                <input type="hidden" id="editCourseId">
+                
+                <div style="margin-bottom: 1rem;">
+                    <label for="editCourseName" class="form-label">اسم الدورة</label>
+                    <input type="text" id="editCourseName" name="courseName" class="form-control" required>
+                </div>
+                
+                <div style="margin-bottom: 1rem;">
+                    <label for="editCourseDescription" class="form-label">الوصف</label>
+                    <textarea id="editCourseDescription" name="description" class="form-control" rows="3" required></textarea>
+                </div>
+                
+                <div style="margin-bottom: 1rem;">
+                    <label for="editCourseTeacher" class="form-label">المعلم</label>
+                    <select id="editCourseTeacher" name="teacherId" class="form-control">
+                        <option value="">اختر المعلم</option>
+                    </select>
+                </div>
+                
+                <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="hideEditCourseModal()">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">تحديث الدورة</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script>
+        // Check authentication
+        if (!checkAuth()) {
+            window.location.href = '../login.html';
+        }
+
+        // Check if user is admin
+        if (!api.isAdmin()) {
+            showAlert('غير مصرح لك بالوصول لهذه الصفحة', 'danger');
+            setTimeout(() => {
+                window.location.href = '../login.html';
+            }, 2000);
+        }
+
+        // Load courses
+        async function loadCourses() {
+            try {
+                console.log('📚 Loading courses from API...');
+                const courses = await api.getAllCourses();
+                console.log('✅ Courses loaded from API:', courses);
+                console.log('📊 Number of courses:', courses.length);
+                console.log('📋 First course data:', courses[0]);
+                displayCourses(courses);
+            } catch (error) {
+                console.error('❌ Failed to load courses:', error);
+                showAlert('فشل في تحميل الدورات: ' + error.message, 'danger');
+            }
+        }
+
+        // Display courses
+        function displayCourses(courses) {
+            console.log('📚 Displaying courses:', courses);
+            const container = document.getElementById('coursesContainer');
+            
+            if (!courses || courses.length === 0) {
+                container.innerHTML = '<div class="card"><div style="text-align: center; padding: 2rem;">لا توجد دورات</div></div>';
+                return;
+            }
+            
+            container.innerHTML = courses.map(course => {
+                console.log('📚 Processing course:', course);
+                console.log('📚 All course keys:', Object.keys(course));
+                console.log('📚 Full course object:', JSON.stringify(course, null, 2));
+                
+                // Try different possible field names
+                const courseId = course.Id || course.id || course.courseId || course.course_id;
+                const courseName = course.CourseName || course.courseName || course.course_name || course.name;
+                const description = course.Description || course.description || course.desc || course.about;
+                const teacher = course.Teacher || course.teacher || course.TeacherName || course.teacherName;
+                const createdDate = course.CreatedDate || course.createdDate || course.created_date || course.date;
+                
+                console.log('📚 Mapped ID:', courseId);
+                console.log('📚 Mapped Name:', courseName);
+                console.log('📚 Mapped Description:', description);
+                console.log('📚 Mapped Teacher:', teacher);
+                
+                return `
+                <div class="card">
+                    <div style="padding: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                            <div style="width: 50px; height: 50px; background: var(--gradient-2); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-book" style="color: white; font-size: 1.5rem;"></i>
+                            </div>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button class="btn btn-sm btn-primary" onclick="editCourse(${courseId})">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteCourse(${courseId})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--gray-800); margin-bottom: 0.5rem;">${courseName || 'غير محدد'}</h3>
+                        <p style="color: var(--gray-600); margin-bottom: 1rem; line-height: 1.6;">${description || 'غير محدد'}</p>
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 1rem; border-top: 1px solid var(--gray-100);">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fas fa-user-tie" style="color: var(--primary);"></i>
+                                <span style="color: var(--gray-700); font-size: 0.9rem;">${teacher ? (teacher.FullName || teacher.fullName || teacher.name || teacher) : 'غير محدد'}</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fas fa-clock" style="color: var(--warning);"></i>
+                                <span style="color: var(--gray-700); font-size: 0.9rem;">${createdDate ? new Date(createdDate).toLocaleDateString('ar-SA') : 'غير محدد'}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        // Modal functions
+        function showAddCourseModal() {
+            document.getElementById('addCourseModal').style.display = 'block';
+            loadTeachers();
+        }
+
+        function hideAddCourseModal() {
+            document.getElementById('addCourseModal').style.display = 'none';
+            document.getElementById('addCourseForm').reset();
+        }
+
+        // Load teachers for dropdown
+        async function loadTeachers() {
+            try {
+                console.log('👨‍🏫 Loading teachers for dropdown...');
+                const users = await api.getAllUsers();
+                console.log('📥 All users loaded:', users);
+                
+                const teachers = users.filter(user => user.userType === 'Teacher');
+                console.log('👨‍🏫 Filtered teachers:', teachers);
+                
+                const select = document.getElementById('courseTeacher');
+                
+                if (teachers.length === 0) {
+                    console.log('⚠️ No teachers found');
+                    select.innerHTML = '<option value="">لا يوجد معلمون</option>';
+                    showAlert('لا يوجد معلمون في النظام. يرجى إضافة معلم أولاً.', 'warning');
+                } else {
+                    select.innerHTML = '<option value="">اختر المعلم</option>' + 
+                        teachers.map(teacher => `<option value="${teacher.id}">${teacher.username}</option>`).join('');
+                    console.log('✅ Teachers dropdown populated successfully');
+                    console.log('👨‍🏫 Teachers data:', teachers);
+                }
+            } catch (error) {
+                console.error('❌ Failed to load teachers:', error);
+                showAlert('فشل في تحميل المعلمين: ' + error.message, 'danger');
+            }
+        }
+
+        // Add course form handler
+        document.getElementById('addCourseForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Validate teacher selection
+            const teacherId = parseInt(document.getElementById('courseTeacher').value) || null;
+            if (!teacherId) {
+                showAlert('يرجى اختيار معلم للدورة', 'warning');
+                return;
+            }
+            
+            const courseData = {
+                CourseCode: "COURSE-" + Date.now(),
+                CourseName: document.getElementById('courseName').value,
+                Description: document.getElementById('courseDescription').value,
+                TeacherId: teacherId
+            };
+
+            console.log('📚 Creating course with data:', courseData);
+            console.log('👨‍🏫 Selected Teacher Element:', document.getElementById('courseTeacher'));
+            console.log('👨‍🏫 Selected Teacher Value:', document.getElementById('courseTeacher').value);
+            console.log('🔢 Parsed Teacher ID:', parseInt(document.getElementById('courseTeacher').value));
+            console.log('❓ Final TeacherId:', courseData.TeacherId);
+
+            try {
+                await api.createCourse(courseData);
+                showAlert('تم إنشاء الدورة بنجاح', 'success');
+                hideAddCourseModal();
+                loadCourses(); // Reload courses
+            } catch (error) {
+                console.error('❌ Failed to create course:', error);
+                console.error('❌ Error details:', error.data);
+                showAlert('فشل في إنشاء الدورة: ' + error.message, 'danger');
+            }
+        });
+
+        // Delete course
+        async function deleteCourse(courseId) {
+            if (confirm('هل أنت متأكد من حذف هذه الدورة؟')) {
+                try {
+                    await api.deleteCourse(courseId);
+                    showAlert('تم حذف الدورة بنجاح', 'success');
+                    loadCourses(); // Reload courses
+                } catch (error) {
+                    showAlert('فشل في حذف الدورة: ' + error.message, 'danger');
+                }
+            }
+        }
+
+        // Load teachers for edit modal
+        async function loadTeachersForEdit() {
+            try {
+                console.log('👨‍🏫 Loading teachers for edit modal...');
+                const users = await api.getAllUsers();
+                console.log('📥 All users loaded:', users);
+                
+                const teachers = users.filter(user => user.userType === 'Teacher');
+                console.log('👨‍🏫 Filtered teachers:', teachers);
+                
+                const select = document.getElementById('editCourseTeacher');
+                
+                if (teachers.length === 0) {
+                    console.log('⚠️ No teachers found');
+                    select.innerHTML = '<option value="">لا يوجد معلمون</option>';
+                } else {
+                    select.innerHTML = '<option value="">اختر المعلم</option>' + 
+                        teachers.map(teacher => `<option value="${teacher.id}">${teacher.username}</option>`).join('');
+                    console.log('✅ Teachers dropdown populated successfully for edit');
+                    console.log('👨‍🏫 Teachers data for edit:', teachers);
+                }
+            } catch (error) {
+                console.error('❌ Failed to load teachers for edit:', error);
+            }
+        }
+
+        // Edit course
+        async function editCourse(courseId) {
+            console.log('✏️ Attempting to edit course with ID:', courseId);
+            
+            try {
+                // Load teachers for edit modal
+                await loadTeachersForEdit();
+                
+                // Get course data from the API
+                const response = await fetch(`${api.baseURL}/course/${courseId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${api.token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const course = await response.json();
+                    console.log('📚 Course data loaded:', course);
+                    
+                    // Populate edit form with course data
+                    document.getElementById('editCourseId').value = courseId;
+                    document.getElementById('editCourseName').value = course.CourseName || course.courseName || '';
+                    document.getElementById('editCourseDescription').value = course.Description || course.description || '';
+                    document.getElementById('editCourseTeacher').value = course.TeacherId || course.teacherId || '';
+                    
+                    // Show edit modal
+                    document.getElementById('editCourseModal').style.display = 'block';
+                    
+                } else {
+                    const errorText = await response.text();
+                    console.log('❌ Failed to load course data:', errorText);
+                    showAlert('فشل في تحميل بيانات الدورة: ' + errorText, 'danger');
+                }
+            } catch (error) {
+                console.error('❌ Error loading course data:', error);
+                showAlert('خطأ في تحميل بيانات الدورة', 'danger');
+            }
+        }
+
+        // Update course form handler
+        document.getElementById('editCourseForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const courseId = document.getElementById('editCourseId').value;
+            const courseData = {
+                CourseCode: "COURSE-" + Date.now(),
+                CourseName: document.getElementById('editCourseName').value,
+                Description: document.getElementById('editCourseDescription').value,
+                TeacherId: parseInt(document.getElementById('editCourseTeacher').value) || null
+            };
+
+            console.log('📚 Updating course:', courseId, courseData);
+
+            try {
+                const response = await fetch(`${api.baseURL}/course/${courseId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${api.token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(courseData)
+                });
+
+                if (response.ok) {
+                    console.log('✅ Course updated successfully');
+                    showAlert('تم تحديث الدورة بنجاح', 'success');
+                    hideEditCourseModal();
+                    loadCourses(); // Reload courses
+                } else {
+                    const errorText = await response.text();
+                    console.log('❌ Failed to update course:', errorText);
+                    showAlert('فشل في تحديث الدورة: ' + errorText, 'danger');
+                }
+            } catch (error) {
+                console.error('❌ Error updating course:', error);
+                showAlert('خطأ في تحديث الدورة: ' + error.message, 'danger');
+            }
+        });
+
+        // Hide edit course modal
+        function hideEditCourseModal() {
+            document.getElementById('editCourseModal').style.display = 'none';
+            document.getElementById('editCourseForm').reset();
+        }
+
+        // Logout function
+        function performLogout() {
+            if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
+                api.logout();
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('📚 Courses page loaded');
+            loadCourses();
+        });
+    </script>
+</body>
+</html>

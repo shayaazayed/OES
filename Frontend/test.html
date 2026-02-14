@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Test - ExamPro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <div class="card" style="text-align: center; max-width: 600px; margin: 2rem auto;">
+            <h1 style="color: var(--primary); margin-bottom: 2rem;">API Connection Test</h1>
+            
+            <div id="testResults" style="text-align: right; margin: 1rem 0;">
+                <p>جاري اختبار الاتصال بالـ API...</p>
+            </div>
+            
+            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                <button class="btn btn-primary" onclick="testAPI()">
+                    <i class="fas fa-plug"></i>
+                    اختبار API
+                </button>
+                <button class="btn btn-success" onclick="testLogin()">
+                    <i class="fas fa-sign-in-alt"></i>
+                    اختبار تسجيل الدخول
+                </button>
+                <button class="btn btn-warning" onclick="goToLogin()">
+                    <i class="fas fa-arrow-left"></i>
+                    الذهاب لتسجيل الدخول
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script>
+        // Test API Connection
+        async function testAPI() {
+            const resultsDiv = document.getElementById('testResults');
+            resultsDiv.innerHTML = '<p>جاري اختبار الاتصال...</p>';
+            
+            try {
+                // Test if API object exists
+                if (typeof api === 'undefined') {
+                    throw new Error('API object is not defined');
+                }
+                
+                resultsDiv.innerHTML += '<p style="color: var(--success);">✓ API object loaded successfully</p>';
+                
+                // Test API methods
+                if (typeof api.getStatistics === 'function') {
+                    resultsDiv.innerHTML += '<p style="color: var(--success);">✓ getStatistics method exists</p>';
+                } else {
+                    resultsDiv.innerHTML += '<p style="color: var(--danger);">✗ getStatistics method missing</p>';
+                }
+                
+                if (typeof api.login === 'function') {
+                    resultsDiv.innerHTML += '<p style="color: var(--success);">✓ login method exists</p>';
+                } else {
+                    resultsDiv.innerHTML += '<p style="color: var(--danger);">✗ login method missing</p>';
+                }
+                
+                // Test API connection
+                const stats = await api.getStatistics();
+                resultsDiv.innerHTML += '<p style="color: var(--success);">✓ API connection successful</p>';
+                resultsDiv.innerHTML += `<p style="color: var(--info);">API Response: ${JSON.stringify(stats, null, 2)}</p>`;
+                
+            } catch (error) {
+                resultsDiv.innerHTML += `<p style="color: var(--danger);">✗ Error: ${error.message}</p>`;
+                console.error('API Test Error:', error);
+            }
+        }
+        
+        // Test Login
+        async function testLogin() {
+            const resultsDiv = document.getElementById('testResults');
+            resultsDiv.innerHTML = '<p>جاري اختبار تسجيل الدخول...</p>';
+            
+            try {
+                const result = await api.login('admin', 'Admin123');
+                resultsDiv.innerHTML += '<p style="color: var(--success);">✓ Login successful</p>';
+                resultsDiv.innerHTML += `<p style="color: var(--info);">Login Response: ${JSON.stringify(result, null, 2)}</p>`;
+            } catch (error) {
+                resultsDiv.innerHTML += `<p style="color: var(--danger);">✗ Login Error: ${error.message}</p>`;
+                console.error('Login Test Error:', error);
+            }
+        }
+        
+        // Go to Login
+        function goToLogin() {
+            window.location.href = 'login.html';
+        }
+        
+        // Auto-test on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Page loaded, checking API...');
+            console.log('API object:', typeof api);
+            console.log('API details:', api);
+            
+            if (typeof api !== 'undefined') {
+                document.getElementById('testResults').innerHTML = '<p style="color: var(--success);">✓ API script loaded successfully</p>';
+            } else {
+                document.getElementById('testResults').innerHTML = '<p style="color: var(--danger);">✗ API script not loaded</p>';
+            }
+        });
+    </script>
+</body>
+</html>

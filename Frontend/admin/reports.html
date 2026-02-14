@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>التقارير - ExamPro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header style="background: white; padding: 1rem 0; border-radius: 16px; margin-bottom: 2rem; box-shadow: var(--shadow-lg);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <button class="btn btn-secondary" onclick="window.location.href='dashboard.html'">
+                        <i class="fas fa-arrow-right"></i>
+                        رجوع
+                    </button>
+                    <div>
+                        <h1 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-800); margin: 0;">التقارير والإحصائيات</h1>
+                        <p style="color: var(--gray-600); margin: 0; font-size: 0.9rem;">عرض وتصدير تقارير النظام</p>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <button class="btn btn-success" onclick="exportReport()">
+                        <i class="fas fa-download"></i>
+                        تصدير تقرير
+                    </button>
+                    <button class="btn btn-secondary" onclick="performLogout()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        تسجيل الخروج
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Report Filters -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">فلاتر التقرير</h2>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">نوع التقرير</label>
+                    <select id="reportType" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                        <option value="summary">ملخص النظام</option>
+                        <option value="users">المستخدمين</option>
+                        <option value="courses">الدورات</option>
+                        <option value="exams">الاختبارات</option>
+                        <option value="results">النتائج</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">من تاريخ</label>
+                    <input type="date" id="startDate" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">إلى تاريخ</label>
+                    <input type="date" id="endDate" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                </div>
+                <div style="display: flex; align-items: end;">
+                    <button class="btn btn-primary" onclick="generateReport()">
+                        <i class="fas fa-chart-bar"></i>
+                        إنشاء تقرير
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Report Content -->
+        <div id="reportContent" style="margin-top: 2rem;">
+            <!-- Report will be displayed here -->
+        </div>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script>
+        // Check authentication
+        if (!checkAuth()) {
+            window.location.href = '../login.html';
+        }
+
+        // Check if user is admin
+        if (!api.isAdmin()) {
+            showAlert('غير مصرح لك بالوصول لهذه الصفحة', 'danger');
+            setTimeout(() => {
+                window.location.href = '../login.html';
+            }, 2000);
+        }
+
+        // Format date function
+        function formatDate(dateString) {
+            if (!dateString) return 'غير محدد';
+            try {
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) return 'تاريخ غير صالح';
+                return date.toLocaleDateString('ar-SA', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            } catch (error) {
+                console.error('❌ Error formatting date:', error, dateString);
+                return 'خطأ في التاريخ';
+            }
+        }
+
+        // Generate report
+        async function generateReport() {
+            const reportType = document.getElementById('reportType').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+
+            try {
+                let reportData;
+                let reportHtml;
+
+                switch (reportType) {
+                    case 'summary':
+                        reportData = await api.getStatistics();
+                        reportHtml = generateSummaryReport(reportData);
+                        break;
+                    case 'users':
+                        reportData = await api.getAllUsers();
+                        reportHtml = generateUsersReport(reportData);
+                        break;
+                    case 'courses':
+                        reportData = await api.getAllCourses();
+                        reportHtml = generateCoursesReport(reportData);
+                        break;
+                    case 'exams':
+                        reportData = await api.getAllExams();
+                        reportHtml = generateExamsReport(reportData);
+                        break;
+                    default:
+                        reportHtml = '<div class="card"><p>نوع التقرير غير متاح حالياً</p></div>';
+                }
+
+                document.getElementById('reportContent').innerHTML = reportHtml;
+                showAlert('تم إنشاء التقرير بنجاح', 'success');
+            } catch (error) {
+                showAlert('فشل في إنشاء التقرير: ' + error.message, 'danger');
+            }
+        }
+
+        // Generate summary report
+        function generateSummaryReport(data) {
+            return `
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">ملخص النظام</h2>
+                        <span style="color: var(--gray-600); font-size: 0.9rem;">${formatDate(new Date())}</span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+                        <div style="text-align: center; padding: 1.5rem; background: var(--gray-50); border-radius: 12px;">
+                            <div style="width: 60px; height: 60px; background: var(--gradient-1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                                <i class="fas fa-users" style="color: white; font-size: 1.5rem;"></i>
+                            </div>
+                            <h3 style="font-size: 2rem; font-weight: 800; color: var(--primary); margin: 0;">${data.totalUsers || 0}</h3>
+                            <p style="color: var(--gray-600); margin: 0;">إجمالي المستخدمين</p>
+                        </div>
+                        <div style="text-align: center; padding: 1.5rem; background: var(--gray-50); border-radius: 12px;">
+                            <div style="width: 60px; height: 60px; background: var(--gradient-2); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                                <i class="fas fa-graduation-cap" style="color: white; font-size: 1.5rem;"></i>
+                            </div>
+                            <h3 style="font-size: 2rem; font-weight: 800; color: var(--success); margin: 0;">${data.totalCourses || 0}</h3>
+                            <p style="color: var(--gray-600); margin: 0;">إجمالي الدورات</p>
+                        </div>
+                        <div style="text-align: center; padding: 1.5rem; background: var(--gray-50); border-radius: 12px;">
+                            <div style="width: 60px; height: 60px; background: var(--gradient-3); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                                <i class="fas fa-clipboard-list" style="color: white; font-size: 1.5rem;"></i>
+                            </div>
+                            <h3 style="font-size: 2rem; font-weight: 800; color: var(--warning); margin: 0;">${data.totalExams || 0}</h3>
+                            <p style="color: var(--gray-600); margin: 0;">إجمالي الاختبارات</p>
+                        </div>
+                        <div style="text-align: center; padding: 1.5rem; background: var(--gray-50); border-radius: 12px;">
+                            <div style="width: 60px; height: 60px; background: var(--gradient-4); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                                <i class="fas fa-check-circle" style="color: white; font-size: 1.5rem;"></i>
+                            </div>
+                            <h3 style="font-size: 2rem; font-weight: 800; color: var(--secondary); margin: 0;">${data.totalStudentExams || 0}</h3>
+                            <p style="color: var(--gray-600); margin: 0;">محاولات الاختبار</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Generate users report
+        function generateUsersReport(users) {
+            const adminCount = users.filter(u => u.userType === 'Admin').length;
+            const teacherCount = users.filter(u => u.userType === 'Teacher').length;
+            const studentCount = users.filter(u => u.userType === 'Student').length;
+
+            return `
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">تقرير المستخدمين</h2>
+                        <span style="color: var(--gray-600); font-size: 0.9rem;">${formatDate(new Date())}</span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                        <div style="text-align: center; padding: 1.5rem; background: var(--danger); color: white; border-radius: 12px;">
+                            <h3 style="font-size: 2rem; font-weight: 800; margin: 0;">${adminCount}</h3>
+                            <p style="margin: 0;">مديرين</p>
+                        </div>
+                        <div style="text-align: center; padding: 1.5rem; background: var(--warning); color: white; border-radius: 12px;">
+                            <h3 style="font-size: 2rem; font-weight: 800; margin: 0;">${teacherCount}</h3>
+                            <p style="margin: 0;">معلمين</p>
+                        </div>
+                        <div style="text-align: center; padding: 1.5rem; background: var(--success); color: white; border-radius: 12px;">
+                            <h3 style="font-size: 2rem; font-weight: 800; margin: 0;">${studentCount}</h3>
+                            <p style="margin: 0;">طلاب</p>
+                        </div>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="background: var(--gray-50);">
+                                    <th style="padding: 1rem; text-align: right; border-bottom: 1px solid var(--gray-200);">اسم المستخدم</th>
+                                    <th style="padding: 1rem; text-align: right; border-bottom: 1px solid var(--gray-200);">الدور</th>
+                                    <th style="padding: 1rem; text-align: right; border-bottom: 1px solid var(--gray-200);">الحالة</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${users.map(user => `
+                                    <tr>
+                                        <td style="padding: 1rem; border-bottom: 1px solid var(--gray-100);">${user.username}</td>
+                                        <td style="padding: 1rem; border-bottom: 1px solid var(--gray-100);">
+                                            <span style="padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.875rem; font-weight: 600; 
+                                                background: ${user.userType === 'Admin' ? 'var(--danger)' : user.userType === 'Teacher' ? 'var(--warning)' : 'var(--success)'}; 
+                                                color: white;">
+                                                ${user.userType === 'Admin' ? 'مدير' : user.userType === 'Teacher' ? 'معلم' : 'طالب'}
+                                            </span>
+                                        </td>
+                                        <td style="padding: 1rem; border-bottom: 1px solid var(--gray-100);">
+                                            <span style="padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.875rem; font-weight: 600; 
+                                                background: var(--success); color: white;">
+                                                نشط
+                                            </span>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Generate courses report
+        function generateCoursesReport(courses) {
+            return `
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">تقرير الدورات</h2>
+                        <span style="color: var(--gray-600); font-size: 0.9rem;">${formatDate(new Date())}</span>
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--gray-800); margin-bottom: 1rem;">إجمالي الدورات: ${courses.length}</h3>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+                        ${courses.map(course => `
+                            <div class="card">
+                                <div style="padding: 1rem;">
+                                    <h4 style="font-size: 1.1rem; font-weight: 600; color: var(--gray-800); margin-bottom: 0.5rem;">${course.CourseName || course.courseName || 'N/A'}</h4>
+                                    <p style="color: var(--gray-600); font-size: 0.9rem; margin-bottom: 0.5rem;">${course.Description || course.description || 'N/A'}</p>
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span style="color: var(--primary); font-size: 0.9rem;">
+                                            <i class="fas fa-user-tie"></i> ${course.Teacher ? course.Teacher.fullName : (course.teacher ? course.teacher.fullName : 'غير محدد')}
+                                        </span>
+                                        <span style="color: var(--warning); font-size: 0.9rem;">
+                                            <i class="fas fa-clock"></i> ${course.DurationMinutes || course.durationMinutes || 8} أسابيع
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Generate exams report
+        function generateExamsReport(exams) {
+            return `
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">تقرير الاختبارات</h2>
+                        <span style="color: var(--gray-600); font-size: 0.9rem;">${formatDate(new Date())}</span>
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--gray-800); margin-bottom: 1rem;">إجمالي الاختبارات: ${exams.length}</h3>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="background: var(--gray-50);">
+                                    <th style="padding: 1rem; text-align: right; border-bottom: 1px solid var(--gray-200);">المعرف</th>
+                                    <th style="padding: 1rem; text-align: right; border-bottom: 1px solid var(--gray-200);">عنوان الاختبار</th>
+                                    <th style="padding: 1rem; text-align: right; border-bottom: 1px solid var(--gray-200);">الدورة</th>
+                                    <th style="padding: 1rem; text-align: right; border-bottom: 1px solid var(--gray-200);">الدرجة</th>
+                                    <th style="padding: 1rem; text-align: right; border-bottom: 1px solid var(--gray-200);">المدة</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${exams.map(exam => `
+                                    <tr>
+                                        <td style="padding: 1rem; border-bottom: 1px solid var(--gray-100);">${exam.Id || exam.id || 'N/A'}</td>
+                                        <td style="padding: 1rem; border-bottom: 1px solid var(--gray-100);">${exam.Title || exam.title || 'N/A'}</td>
+                                        <td style="padding: 1rem; border-bottom: 1px solid var(--gray-100);">${exam.CourseName || (exam.Course ? exam.Course.CourseName : 'N/A') || 'N/A'}</td>
+                                        <td style="padding: 1rem; border-bottom: 1px solid var(--gray-100);">${exam.TotalMarks || exam.totalMarks || 100} درجة</td>
+                                        <td style="padding: 1rem; border-bottom: 1px solid var(--gray-100);">${exam.DurationMinutes || exam.durationMinutes || 60} دقيقة</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Export report
+        function exportReport() {
+            const reportContent = document.getElementById('reportContent').innerHTML;
+            if (!reportContent.trim()) {
+                showAlert('يرجى إنشاء تقرير أولاً', 'warning');
+                return;
+            }
+
+            // Simple export - in real implementation, you'd use a library like jsPDF or excelJS
+            const blob = new Blob([reportContent], { type: 'text/html' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `تقرير_${formatDate(new Date()).replace(/[/:]/g, '-')}.html`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            showAlert('تم تصدير التقرير بنجاح', 'success');
+        }
+
+        // Logout function
+        function performLogout() {
+            if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
+                api.logout();
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set default dates
+            const today = new Date();
+            const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
+            document.getElementById('startDate').value = lastMonth.toISOString().split('T')[0];
+            document.getElementById('endDate').value = today.toISOString().split('T')[0];
+        });
+    </script>
+</body>
+</html>

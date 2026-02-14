@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الملف الشخصي - ExamPro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header style="background: white; padding: 1rem 0; border-radius: 16px; margin-bottom: 2rem; box-shadow: var(--shadow-lg);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <button class="btn btn-secondary" onclick="window.location.href='dashboard.html'">
+                        <i class="fas fa-arrow-right"></i>
+                        رجوع
+                    </button>
+                    <div>
+                        <h1 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-800); margin: 0;">الملف الشخصي</h1>
+                        <p style="color: var(--gray-600); margin: 0; font-size: 0.9rem;">معلوماتك الشخصية</p>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <button class="btn btn-primary" onclick="updateProfile()">
+                        <i class="fas fa-save"></i>
+                        حفظ التغييرات
+                    </button>
+                    <button class="btn btn-secondary" onclick="performLogout()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        تسجيل الخروج
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Profile Content -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fas fa-user"></i>
+                    معلوماتك الشخصية
+                </h2>
+            </div>
+            <div style="padding: 2rem;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                    <!-- Profile Picture -->
+                    <div style="text-align: center;">
+                        <div style="width: 120px; height: 120px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                            <i class="fas fa-user" style="color: white; font-size: 2rem;"></i>
+                        </div>
+                        <div style="margin-top: 1rem;">
+                            <button class="btn btn-secondary btn-sm" onclick="changeProfilePicture()">
+                                <i class="fas fa-camera"></i>
+                                تغيير الصورة
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Personal Information -->
+                    <div>
+                        <h3 style="font-size: 1.1rem; font-weight: 600; color: var(--gray-800); margin-bottom: 1rem;">المعلومات الشخصية</h3>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">اسم المستخدم</label>
+                                <input type="text" id="username" value="teacher1" disabled style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px; background: var(--gray-50);">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">البريد الإلكتروني</label>
+                                <input type="email" id="email" value="teacher1@example.com" disabled style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px; background: var(--gray-50);">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">الاسم الكامل</label>
+                                <input type="text" id="fullName" value="John Teacher" disabled style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px; background: var(--gray-50);">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">نوع المستخدم</label>
+                                <input type="text" id="userType" value="Teacher" disabled style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px; background: var(--gray-50);">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contact Information -->
+                    <div>
+                        <h3 style="font-size: 1.1rem; font-weight: 600; color: var(--gray-800); margin-bottom: 1rem;">معلومات الاتصال</h3>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">رقم الهاتف</label>
+                                <input type="tel" id="phone" value="+966 1234 5678" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">العنوان</label>
+                                <input type="text" id="address" value="123 شارع المعلم، الرياض" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Account Information -->
+                    <div>
+                        <h3 style="font-size: 1.1rem; font-weight: 600; color: var(--gray-800); margin-bottom: 1rem;">معلومات الحساب</h3>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">تاريخ الإنشاء</label>
+                                <input type="text" id="createdDate" value="2026-02-07" disabled style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px; background: var(--gray-50);">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">آخر تسجيل دخول</label>
+                                <input type="text" id="lastLogin" value="2026-02-13 10:30:00" disabled style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px; background: var(--gray-50);">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script>
+        // Check authentication
+        if (!checkAuth()) {
+            window.location.href = '../login.html';
+        }
+
+        // Check if user is teacher
+        if (!api.isTeacher()) {
+            showAlert('غير مصرح لك بالوصول لهذه الصفحة', 'danger');
+            setTimeout(() => {
+                window.location.href = '../login.html';
+            }, 2000);
+        }
+
+        // Load user profile
+        async function loadProfile() {
+            try {
+                console.log('👤 Loading user profile...');
+                const user = api.user;
+                
+                if (user) {
+                    document.getElementById('username').value = user.username || '';
+                    document.getElementById('email').value = user.email || '';
+                    document.getElementById('fullName').value = user.fullName || '';
+                    document.getElementById('userType').value = user.userType || '';
+                    document.getElementById('phone').value = user.phone || '';
+                    document.getElementById('address').value = user.address || '';
+                    document.getElementById('createdDate').value = user.createdDate ? new Date(user.createdDate).toISOString().split('T')[0] : '';
+                    document.getElementById('lastLogin').value = user.lastLogin ? new Date(user.lastLogin).toISOString().split('T')[0] : '';
+                }
+            } catch (error) {
+                console.error('❌ Failed to load profile:', error);
+                showAlert('فشل في تحميل الملف الشخصي: ' + error.message, 'danger');
+            }
+        }
+
+        // Update profile
+        async function updateProfile() {
+            try {
+                console.log('💾 Updating profile...');
+                
+                const profileData = {
+                    fullName: document.getElementById('fullName').value,
+                    phone: document.getElementById('phone').value,
+                    address: document.getElementById('address').value
+                };
+
+                // TODO: Call API to update profile
+                console.log('📝 Profile data to update:', profileData);
+                
+                showAlert('تم حفظ التغييرات بنجاح', 'success');
+            } catch (error) {
+                console.error('❌ Failed to update profile:', error);
+                showAlert('فشل في حفظ التغييرات: ' + error.message, 'danger');
+            }
+        }
+
+        // Change profile picture
+        function changeProfilePicture() {
+            console.log('📷 Changing profile picture...');
+            // TODO: Implement profile picture upload
+            showAlert('تغيير الصورة الشخصية قيد التطوير', 'info');
+        }
+
+        // Logout function
+        function performLogout() {
+            if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
+                api.logout();
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Initializing profile page...');
+            loadProfile();
+        });
+    </script>
+</body>
+</html>

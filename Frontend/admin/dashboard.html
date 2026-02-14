@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم المدير - ExamPro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header style="background: white; padding: 1rem 0; border-radius: 16px; margin-bottom: 2rem; box-shadow: var(--shadow-lg);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div style="width: 50px; height: 50px; background: var(--gradient-1); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-shield-alt" style="color: white; font-size: 1.5rem;"></i>
+                    </div>
+                    <div>
+                        <h1 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-800); margin: 0;">لوحة تحكم المدير</h1>
+                        <p style="color: var(--gray-600); margin: 0; font-size: 0.9rem;">مرحباً بك في لوحة الإدارة</p>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <button class="btn btn-secondary" onclick="performLogout()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        تسجيل الخروج
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Statistics Cards -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+            <div class="card" style="text-align: center;">
+                <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #3b82f6, #2563eb); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                    <i class="fas fa-users" style="color: white; font-size: 1.5rem;"></i>
+                </div>
+                <h3 style="font-size: 2rem; font-weight: 800; color: var(--primary); margin: 0;" id="totalUsers">-</h3>
+                <p style="color: var(--gray-600); margin: 0.5rem 0;">إجمالي المستخدمين</p>
+                <div style="color: var(--success); font-size: 0.9rem;">
+                    <i class="fas fa-arrow-up"></i> +12 هذا الشهر
+                </div>
+            </div>
+
+            <div class="card" style="text-align: center;">
+                <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                    <i class="fas fa-graduation-cap" style="color: white; font-size: 1.5rem;"></i>
+                </div>
+                <h3 style="font-size: 2rem; font-weight: 800; color: var(--success); margin: 0;" id="totalCourses">-</h3>
+                <p style="color: var(--gray-600); margin: 0.5rem 0;">إجمالي الدورات</p>
+                <div style="color: var(--success); font-size: 0.9rem;">
+                    <i class="fas fa-arrow-up"></i> +3 هذا الشهر
+                </div>
+            </div>
+
+            <div class="card" style="text-align: center;">
+                <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                    <i class="fas fa-clipboard-list" style="color: white; font-size: 1.5rem;"></i>
+                </div>
+                <h3 style="font-size: 2rem; font-weight: 800; color: var(--warning); margin: 0;" id="totalExams">-</h3>
+                <p style="color: var(--gray-600); margin: 0.5rem 0;">إجمالي الاختبارات</p>
+                <div style="color: var(--success); font-size: 0.9rem;">
+                    <i class="fas fa-arrow-up"></i> +8 هذا الأسبوع
+                </div>
+            </div>
+
+            <div class="card" style="text-align: center;">
+                <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #8b5cf6, #7c3aed); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                    <i class="fas fa-check-circle" style="color: white; font-size: 1.5rem;"></i>
+                </div>
+                <h3 style="font-size: 2rem; font-weight: 800; color: var(--secondary); margin: 0;" id="totalAttempts">-</h3>
+                <p style="color: var(--gray-600); margin: 0.5rem 0;">محاولات الاختبار</p>
+                <div style="color: var(--success); font-size: 0.9rem;">
+                    <i class="fas fa-arrow-up"></i> +45 هذا الأسبوع
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">إجراءات سريعة</h2>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                <button class="btn btn-primary" onclick="window.location.href='users.html'">
+                    <i class="fas fa-user-plus"></i>
+                    إضافة مستخدم
+                </button>
+                <button class="btn btn-success" onclick="window.location.href='courses.html'">
+                    <i class="fas fa-plus"></i>
+                    إنشاء دورة
+                </button>
+                <button class="btn btn-warning" onclick="window.location.href='reports.html'">
+                    <i class="fas fa-download"></i>
+                    تقرير سريع
+                </button>
+                <button class="btn btn-secondary" onclick="window.location.href='settings.html'">
+                    <i class="fas fa-cog"></i>
+                    الإعدادات
+                </button>
+            </div>
+        </div>
+
+        <!-- Recent Activities -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">النشاطات الأخيرة</h2>
+            </div>
+            <div id="recentActivities" style="max-height: 400px; overflow-y: auto;">
+                <!-- Activities will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script>
+        // Check authentication
+        if (!checkAuth()) {
+            window.location.href = '../login.html';
+        }
+
+        // Check if user is admin
+        if (!api.isAdmin()) {
+            showAlert('غير مصرح لك بالوصول لهذه الصفحة', 'danger');
+            setTimeout(() => {
+                window.location.href = '../login.html';
+            }, 2000);
+        }
+
+        // Load Dashboard Data
+        async function loadDashboardData() {
+            try {
+                console.log('📊 Loading dashboard data...');
+                
+                // Load statistics from database
+                const stats = await api.getStatistics();
+                console.log('✅ Statistics loaded:', stats);
+                
+                // Update statistics with real data
+                document.getElementById('totalUsers').textContent = stats.totalUsers || '0';
+                document.getElementById('totalCourses').textContent = stats.totalCourses || '0';
+                document.getElementById('totalExams').textContent = stats.totalExams || '0';
+                document.getElementById('totalAttempts').textContent = stats.totalStudentExams || '0';
+                
+                // Load recent activities from database
+                try {
+                    const logs = await fetch(`${api.baseURL}/admin/logs`, {
+                        headers: {
+                            'Authorization': `Bearer ${api.token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (logs.ok) {
+                        const activities = await logs.json();
+                        console.log('✅ Activities loaded:', activities);
+                        console.log('📋 Activities structure:', JSON.stringify(activities, null, 2));
+                        console.log('🔍 First activity keys:', activities.length > 0 ? Object.keys(activities[0]) : 'No activities');
+                        
+                        const activitiesHtml = activities.map(log => {
+                            console.log('🔍 Processing log:', log);
+                            console.log('🔍 Log keys:', Object.keys(log));
+                            return `
+                                <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; border-bottom: 1px solid var(--gray-100); hover: background: var(--gray-50);">
+                                    <div style="width: 40px; height: 40px; background: var(--gradient-1); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                        <i class="${getActivityIcon(log.action || log.Action)}" style="color: white; font-size: 1rem;"></i>
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <h4 style="margin: 0; font-size: 1rem; color: var(--gray-800);">${log.action || log.Action || 'N/A'}</h4>
+                                        <p style="margin: 0.25rem 0; color: var(--gray-600); font-size: 0.9rem;">${log.description || log.Description || 'N/A'}</p>
+                                        <span style="color: var(--gray-500); font-size: 0.8rem;">${formatDate(log.timestamp || log.Timestamp)}</span>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+                        
+                        document.getElementById('recentActivities').innerHTML = activitiesHtml;
+                    } else {
+                        throw new Error('Failed to load activities');
+                    }
+                } catch (error) {
+                    console.log('⚠️ Using fallback activities:', error);
+                    // Fallback to sample activities
+                    const activities = [
+                        { Action: 'Exam Created', Description: 'اختبار "الرياضيات" تم إنشاؤه', Timestamp: new Date().toISOString(), user: 'Admin' },
+                        { Action: 'User Registered', Description: 'طالب جديد "أحمد محمد" تم تسجيله', Timestamp: new Date().toISOString(), user: 'Admin' },
+                        { Action: 'Course Created', Description: 'دورة "البرمجة" تم إنشاؤها', Timestamp: new Date().toISOString(), user: 'Teacher' },
+                        { Action: 'Exam Submitted', Description: 'طالب "محمد علي" سلم اختبار', Timestamp: new Date().toISOString(), user: 'Student' }
+                    ];
+                    
+                    const activitiesHtml = activities.map(log => `
+                        <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; border-bottom: 1px solid var(--gray-100); hover: background: var(--gray-50);">
+                            <div style="width: 40px; height: 40px; background: var(--gradient-1); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                <i class="${getActivityIcon(log.Action)}" style="color: white; font-size: 1rem;"></i>
+                            </div>
+                            <div style="flex: 1;">
+                                <h4 style="margin: 0; font-size: 1rem; color: var(--gray-800);">${log.Action}</h4>
+                                <p style="margin: 0.25rem 0; color: var(--gray-600); font-size: 0.9rem;">${log.Description}</p>
+                                <span style="color: var(--gray-500); font-size: 0.8rem;">${formatDate(log.Timestamp)}</span>
+                            </div>
+                        </div>
+                    `).join('');
+                    
+                    document.getElementById('recentActivities').innerHTML = activitiesHtml;
+                }
+
+            } catch (error) {
+                console.error('❌ Failed to load dashboard data:', error);
+                showAlert('فشل في تحميل بيانات لوحة التحكم: ' + error.message, 'danger');
+            }
+        }
+
+        // Helper functions
+        function formatDate(dateString) {
+            if (!dateString) return 'غير محدد';
+            try {
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) return 'تاريخ غير صالح';
+                return date.toLocaleDateString('ar-SA', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            } catch (error) {
+                console.error('❌ Error formatting date:', error, dateString);
+                return 'خطأ في التاريخ';
+            }
+        }
+
+        function getActivityIcon(action) {
+            const icons = {
+                'Exam Created': 'fas fa-clipboard-plus',
+                'User Registered': 'fas fa-user-plus',
+                'Course Created': 'fas fa-book-plus',
+                'Exam Submitted': 'fas fa-check-circle'
+            };
+            return icons[action] || 'fas fa-info-circle';
+        }
+
+        // Logout function
+        function performLogout() {
+            console.log('🚪 Logout button clicked');
+            if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
+                api.logout();
+            }
+        }
+
+        // Initialize Dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Dashboard page loaded');
+            loadDashboardData();
+        });
+    </script>
+</body>
+</html>

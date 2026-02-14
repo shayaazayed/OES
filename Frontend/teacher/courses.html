@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة الدورات - ExamPro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header style="background: white; padding: 1rem 0; border-radius: 16px; margin-bottom: 2rem; box-shadow: var(--shadow-lg);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <button class="btn btn-secondary" onclick="window.location.href='dashboard.html'">
+                        <i class="fas fa-arrow-right"></i>
+                        رجوع
+                    </button>
+                    <div>
+                        <h1 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-800); margin: 0;">إدارة الدورات</h1>
+                        <p style="color: var(--gray-600); margin: 0; font-size: 0.9rem;">الدورات الخاصة بك</p>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <button class="btn btn-primary" onclick="createNewCourse()">
+                        <i class="fas fa-plus"></i>
+                        إنشاء دورة جديدة
+                    </button>
+                    <button class="btn btn-secondary" onclick="performLogout()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        تسجيل الخروج
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Courses List -->
+        <div id="coursesContainer" style="margin-bottom: 2rem;">
+            <!-- Courses will be loaded here -->
+        </div>
+
+        <!-- Create Course Modal -->
+        <div id="createCourseModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;">
+            <div style="background: white; padding: 2rem; border-radius: 16px; max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto;">
+                <h2 style="margin-top: 0; color: var(--gray-800);">إنشاء دورة جديدة</h2>
+                <form id="createCourseForm">
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">اسم الدورة *</label>
+                        <input type="text" id="courseName" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">وصف الدورة</label>
+                        <textarea id="courseDescription" rows="3" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;"></textarea>
+                    </div>
+                    <div style="display: flex; justify-content: flex-end; gap: 1rem;">
+                        <button type="button" class="btn btn-secondary" onclick="hideCreateCourseModal()">إلغاء</button>
+                        <button type="submit" class="btn btn-primary">إنشاء الدورة</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script>
+        // Check authentication
+        if (!checkAuth()) {
+            window.location.href = '../login.html';
+        }
+
+        // Check if user is teacher
+        if (!api.isTeacher()) {
+            showAlert('غير مصرح لك بالوصول لهذه الصفحة', 'danger');
+            setTimeout(() => {
+                window.location.href = '../login.html';
+            }, 2000);
+        }
+
+        // Load teacher's courses
+        async function loadCourses() {
+            try {
+                console.log('📚 Loading teacher courses...');
+                console.log('📚 Token:', api.token ? 'exists' : 'missing');
+                console.log('📚 Base URL:', api.baseURL);
+                
+                const response = await fetch(`${api.baseURL}/teacher/courses`, {
+                    headers: {
+                        'Authorization': `Bearer ${api.token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                console.log('📚 Courses response status:', response.status);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.log('📚 Courses error response:', errorText);
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+                }
+                
+                const courses = await response.json();
+                console.log('✅ Teacher courses loaded:', courses);
+                console.log('📚 Number of courses:', courses.length);
+                console.log('📚 First course data:', courses[0]);
+                console.log('📚 All course keys:', courses.length > 0 ? Object.keys(courses[0]) : 'No courses');
+                
+                displayCourses(courses);
+            } catch (error) {
+                console.error('❌ Failed to load courses:', error);
+                showAlert('فشل في تحميل الدورات: ' + error.message, 'danger');
+            }
+        }
+
+        // Display courses
+        function displayCourses(courses) {
+            console.log('📚 Displaying courses:', courses);
+            const container = document.getElementById('coursesContainer');
+            
+            if (!courses || courses.length === 0) {
+                container.innerHTML = '<div class="card"><div style="text-align: center; padding: 2rem;">لا توجد دورات</div></div>';
+                return;
+            }
+
+            const coursesHtml = courses.map(course => `
+                <div class="card">
+                    <div style="padding: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                            <div>
+                                <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--gray-800); margin-bottom: 0.5rem;">${course.CourseName || course.courseName}</h3>
+                                <p style="color: var(--gray-600); font-size: 0.9rem; margin-bottom: 1rem;">${course.Description || course.description || 'لا يوجد وصف'}</p>
+                            </div>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button class="btn btn-warning btn-sm" onclick="editCourse(${course.Id || course.id})">
+                                    <i class="fas fa-edit"></i>
+                                    تعديل
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteCourse(${course.Id || course.id})">
+                                    <i class="fas fa-trash"></i>
+                                    حذف
+                                </button>
+                            </div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 1rem; border-top: 1px solid var(--gray-100);">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <span style="color: var(--gray-500); font-size: 0.8rem;">
+                                    <i class="fas fa-users"></i> ${course.StudentCount || 0} طالب
+                                </span>
+                                <span style="color: var(--gray-500); font-size: 0.8rem;">
+                                    <i class="fas fa-clipboard-list"></i> ${course.ExamCount || 0} اختبار
+                                </span>
+                            </div>
+                            <div style="color: var(--gray-500); font-size: 0.8rem;">
+                                ${formatDate(course.CreatedDate || course.createdDate)}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            container.innerHTML = coursesHtml;
+        }
+
+        // Format date
+        function formatDate(dateString) {
+            if (!dateString) return 'غير محدد';
+            try {
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) return 'تاريخ غير صالح';
+                return date.toLocaleDateString('ar-SA', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            } catch (error) {
+                console.error('❌ Error formatting date:', error, dateString);
+                return 'خطأ في التاريخ';
+            }
+        }
+
+        // Show create course modal
+        function showCreateCourseModal() {
+            document.getElementById('createCourseModal').style.display = 'block';
+        }
+
+        // Hide create course modal
+        function hideCreateCourseModal() {
+            document.getElementById('createCourseModal').style.display = 'none';
+            document.getElementById('createCourseForm').reset();
+        }
+
+        // Create new course
+        async function createNewCourse() {
+            showCreateCourseModal();
+        }
+
+        // Edit course
+        function editCourse(courseId) {
+            console.log('✏️ Editing course with ID:', courseId);
+            // TODO: Navigate to edit page or show edit modal
+            showAlert('تعديل الدورة قيد التطوير', 'info');
+        }
+
+        // Delete course
+        async function deleteCourse(courseId) {
+            if (confirm('هل أنت متأكد من حذف هذه الدورة؟')) {
+                try {
+                    console.log('🗑️ Deleting course with ID:', courseId);
+                    // TODO: Call API to delete course
+                    showAlert('تم حذف الدورة بنجاح', 'success');
+                    loadCourses(); // Reload courses
+                } catch (error) {
+                    console.error('❌ Failed to delete course:', error);
+                    showAlert('فشل في حذف الدورة: ' + error.message, 'danger');
+                }
+            }
+        }
+
+        // Logout function
+        function performLogout() {
+            if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
+                api.logout();
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Initializing teacher courses page...');
+            loadCourses();
+        });
+    </script>
+</body>
+</html>

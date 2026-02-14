@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة المستخدمين - ExamPro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header style="background: white; padding: 1rem 0; border-radius: 16px; margin-bottom: 2rem; box-shadow: var(--shadow-lg);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <button class="btn btn-secondary" onclick="window.location.href='dashboard.html'">
+                        <i class="fas fa-arrow-right"></i>
+                        رجوع
+                    </button>
+                    <div>
+                        <h1 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-800); margin: 0;">إدارة المستخدمين</h1>
+                        <p style="color: var(--gray-600); margin: 0; font-size: 0.9rem;">إضافة وحذف وتعديل المستخدمين</p>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <button class="btn btn-primary" onclick="showAddUserModal()">
+                        <i class="fas fa-user-plus"></i>
+                        إضافة مستخدم جديد
+                    </button>
+                    <button class="btn btn-secondary" onclick="performLogout()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        تسجيل الخروج
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Users Table -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">قائمة المستخدمين</h2>
+                <div style="display: flex; gap: 1rem;">
+                    <input type="text" id="searchInput" placeholder="البحث عن مستخدم..." onkeyup="searchUsers()" style="padding: 0.5rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                    <select id="roleFilter" onchange="filterUsers()" style="padding: 0.5rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                        <option value="all">جميع الأدوار</option>
+                        <option value="Admin">مدير</option>
+                        <option value="Teacher">معلم</option>
+                        <option value="Student">طالب</option>
+                    </select>
+                </div>
+            </div>
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: var(--gray-50);">
+                            <th style="padding: 1rem; text-align: right; border-bottom: 1px solid var(--gray-200);">اسم المستخدم</th>
+                            <th style="padding: 1rem; text-align: right; border-bottom: 1px solid var(--gray-200);">البريد الإلكتروني</th>
+                            <th style="padding: 1rem; text-align: right; border-bottom: 1px solid var(--gray-200);">الدور</th>
+                            <th style="padding: 1rem; text-align: right; border-bottom: 1px solid var(--gray-200);">الحالة</th>
+                            <th style="padding: 1rem; text-align: right; border-bottom: 1px solid var(--gray-200);">الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <!-- Users will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add User Modal -->
+    <div id="addUserModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 2rem; border-radius: 16px; width: 90%; max-width: 500px;">
+            <h3 style="margin-bottom: 1.5rem;">إضافة مستخدم جديد</h3>
+            <form id="addUserForm">
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">الاسم الكامل</label>
+                    <input type="text" id="newFullName" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">اسم المستخدم</label>
+                    <input type="text" id="newUsername" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">البريد الإلكتروني</label>
+                    <input type="email" id="newEmail" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">كلمة المرور</label>
+                    <input type="password" id="newPassword" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                </div>
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">الدور</label>
+                    <select id="newRole" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                        <option value="">اختر الدور</option>
+                        <option value="Admin">مدير</option>
+                        <option value="Teacher">معلم</option>
+                        <option value="Student">طالب</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="hideAddUserModal()">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">إضافة مستخدم</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit User Modal -->
+    <div id="editUserModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 2rem; border-radius: 16px; width: 90%; max-width: 500px;">
+            <h3 style="margin-bottom: 1.5rem;">تعديل مستخدم</h3>
+            <form id="editUserForm">
+                <input type="hidden" id="editUserId">
+                
+                <div style="margin-bottom: 1rem;">
+                    <label for="editFullName" class="form-label">الاسم الكامل</label>
+                    <input type="text" id="editFullName" name="fullName" class="form-control" required>
+                </div>
+                
+                <div style="margin-bottom: 1rem;">
+                    <label for="editUsername" class="form-label">اسم المستخدم</label>
+                    <input type="text" id="editUsername" name="username" class="form-control" required>
+                </div>
+                
+                <div style="margin-bottom: 1rem;">
+                    <label for="editEmail" class="form-label">البريد الإلكتروني</label>
+                    <input type="email" id="editEmail" name="email" class="form-control" required>
+                </div>
+                
+                <div style="margin-bottom: 1rem;">
+                    <label for="editRole" class="form-label">نوع المستخدم</label>
+                    <select id="editRole" name="userType" class="form-control" required>
+                        <option value="Student">طالب</option>
+                        <option value="Teacher">معلم</option>
+                        <option value="Admin">مدير</option>
+                    </select>
+                </div>
+                
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem;">
+                        <input type="checkbox" id="editIsActive" name="isActive" checked>
+                        <span>حساب نشط</span>
+                    </label>
+                </div>
+                
+                <div style="margin-bottom: 1rem;">
+                    <label for="editPassword" class="form-label">كلمة المرور (اتركها فارغة للحفاظ على القديمة)</label>
+                    <input type="password" id="editPassword" name="password" class="form-control" placeholder="اتركها فارغة إذا لم تريد تغييرها">
+                </div>
+                
+                <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="hideEditUserModal()">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">تحديث المستخدم</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script>
+        // Check authentication
+        if (!checkAuth()) {
+            window.location.href = '../login.html';
+        }
+
+        // Check if user is admin
+        if (!api.isAdmin()) {
+            showAlert('غير مصرح لك بالوصول لهذه الصفحة', 'danger');
+            setTimeout(() => {
+                window.location.href = '../login.html';
+            }, 2000);
+        }
+
+        // Load users
+        async function loadUsers() {
+            try {
+                console.log('📥 Loading users from API...');
+                const users = await api.getAllUsers();
+                console.log('✅ Users loaded from API:', users);
+                console.log('📊 Number of users:', users.length);
+                console.log('📋 First user data:', users[0]);
+                
+                // Store all users for filtering
+                localStorage.setItem('allUsers', JSON.stringify(users));
+                
+                // Apply current filters
+                filterUsers();
+            } catch (error) {
+                console.error('❌ Failed to load users:', error);
+                showAlert('فشل في تحميل المستخدمين: ' + error.message, 'danger');
+            }
+        }
+
+        // Filter users by role
+        function filterUsers() {
+            const roleFilter = document.getElementById('roleFilter').value;
+            const searchInput = document.getElementById('searchInput').value.toLowerCase();
+            console.log('🔍 Filtering users by role:', roleFilter, 'search:', searchInput);
+            
+            const allUsers = JSON.parse(localStorage.getItem('allUsers') || '[]');
+            let filteredUsers = allUsers;
+            
+            // Filter by role
+            if (roleFilter && roleFilter !== 'all') {
+                filteredUsers = filteredUsers.filter(user => user.userType === roleFilter);
+            }
+            
+            // Filter by search
+            if (searchInput) {
+                filteredUsers = filteredUsers.filter(user => 
+                    user.username.toLowerCase().includes(searchInput) ||
+                    user.email.toLowerCase().includes(searchInput)
+                );
+            }
+            
+            console.log('🔍 Final filtered users:', filteredUsers);
+            displayUsers(filteredUsers);
+        }
+
+        // Search users
+        function searchUsers() {
+            filterUsers();
+        }
+
+        // Display users in table
+        function displayUsers(users) {
+            console.log('👥 Displaying users:', users);
+            const tbody = document.getElementById('usersTableBody');
+            
+            if (!users || users.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 2rem;">لا يوجد مستخدمون</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = users.map(user => {
+                console.log('👤 Processing user:', user);
+                console.log('🆔 All user keys:', Object.keys(user));
+                console.log('🆔 User ID:', user.Id);
+                console.log('🆔 User userId:', user.userId);
+                console.log('👤 Username:', user.username);
+                console.log('📧 Email:', user.email);
+                console.log('🎭 UserType:', user.userType);
+                
+                // Try different possible field names
+                const userId = user.Id || user.id || user.userId || user.user_id;
+                const username = user.Username || user.username;
+                const email = user.Email || user.email;
+                const userType = user.UserType || user.userType;
+                
+                console.log('🆔 Mapped User ID:', userId);
+                console.log('👤 Mapped Username:', username);
+                console.log('📧 Mapped Email:', email);
+                console.log('🎭 Mapped UserType:', userType);
+                
+                return `
+                <tr>
+                    <td style="padding: 1rem; border-bottom: 1px solid var(--gray-100);">${username || 'N/A'}</td>
+                    <td style="padding: 1rem; border-bottom: 1px solid var(--gray-100);">${email || 'N/A'}</td>
+                    <td style="padding: 1rem; border-bottom: 1px solid var(--gray-100);">
+                        <span style="padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.875rem; font-weight: 600; 
+                            background: ${userType === 'Admin' ? 'var(--danger)' : userType === 'Teacher' ? 'var(--warning)' : 'var(--success)'}; 
+                            color: white;">
+                            ${userType === 'Admin' ? 'مدير' : userType === 'Teacher' ? 'معلم' : 'طالب'}
+                        </span>
+                    </td>
+                    <td style="padding: 1rem; border-bottom: 1px solid var(--gray-100);">
+                        <span style="padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.875rem; font-weight: 600; 
+                            background: var(--success); color: white;">
+                            نشط
+                        </span>
+                    </td>
+                    <td style="padding: 1rem; border-bottom: 1px solid var(--gray-100);">
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="btn btn-sm btn-primary" onclick="editUser(${userId})">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteUser(${userId})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `}).join('');
+        }
+
+        // Modal functions
+        function showAddUserModal() {
+            document.getElementById('addUserModal').style.display = 'block';
+        }
+
+        function hideAddUserModal() {
+            document.getElementById('addUserModal').style.display = 'none';
+            document.getElementById('addUserForm').reset();
+        }
+
+        function hideEditUserModal() {
+            document.getElementById('editUserModal').style.display = 'none';
+            document.getElementById('editUserForm').reset();
+        }
+
+        // Add user form handler
+        document.getElementById('addUserForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const userData = {
+                fullName: document.getElementById('newFullName').value,
+                username: document.getElementById('newUsername').value,
+                email: document.getElementById('newEmail').value,
+                password: document.getElementById('newPassword').value,
+                userType: document.getElementById('newRole').value
+            };
+
+            try {
+                await api.createUser(userData);
+                showAlert('تم إضافة المستخدم بنجاح', 'success');
+                hideAddUserModal();
+                loadUsers(); // Reload users
+            } catch (error) {
+                showAlert('فشل في إضافة المستخدم: ' + error.message, 'danger');
+            }
+        });
+
+        // Delete user
+        async function deleteUser(userId) {
+            console.log('🗑️ Attempting to delete user with ID:', userId);
+            
+            if (confirm('هل أنت متأكد من حذف هذا المستخدم؟')) {
+                try {
+                    console.log('📤 Calling API deleteUser with ID:', userId);
+                    await api.deleteUser(userId);
+                    showAlert('تم حذف المستخدم بنجاح', 'success');
+                    loadUsers(); // Reload users
+                } catch (error) {
+                    console.error('❌ Delete user error:', error);
+                    showAlert('فشل في حذف المستخدم: ' + error.message, 'danger');
+                }
+            }
+        }
+
+        // Edit user
+        async function editUser(userId) {
+            console.log('✏️ Attempting to edit user with ID:', userId);
+            
+            try {
+                // Get user data from the stored users array
+                const allUsers = JSON.parse(localStorage.getItem('allUsers') || '[]');
+                const user = allUsers.find(u => (u.Id || u.id || u.userId) === userId);
+                
+                if (!user) {
+                    showAlert('المستخدم غير موجود', 'danger');
+                    return;
+                }
+                
+                console.log('👤 Found user to edit:', user);
+                
+                // Populate edit form with user data
+                document.getElementById('editUserId').value = userId;
+                document.getElementById('editFullName').value = user.FullName || user.fullName || '';
+                document.getElementById('editUsername').value = user.Username || user.username || '';
+                document.getElementById('editEmail').value = user.Email || user.email || '';
+                document.getElementById('editRole').value = user.UserType || user.userType || '';
+                document.getElementById('editIsActive').checked = user.IsActive !== false; // Default to true
+                
+                // Show edit modal
+                document.getElementById('editUserModal').style.display = 'block';
+                
+            } catch (error) {
+                console.error('❌ Error preparing edit form:', error);
+                showAlert('فشل في تحميل بيانات المستخدم للتعديل', 'danger');
+            }
+        }
+
+        // Update user form handler
+        document.getElementById('editUserForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const userId = document.getElementById('editUserId').value;
+            const userData = {
+                fullName: document.getElementById('editFullName').value,
+                username: document.getElementById('editUsername').value,
+                email: document.getElementById('editEmail').value,
+                userType: document.getElementById('editRole').value,
+                password: document.getElementById('editPassword').value, // Optional - only if provided
+                isActive: document.getElementById('editIsActive').checked
+            };
+
+            try {
+                console.log('📤 Updating user:', userId, userData);
+                
+                // Call API to update user
+                const response = await fetch(`${api.baseURL}/admin/users/${userId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${api.token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(userData)
+                });
+
+                if (response.ok) {
+                    showAlert('تم تحديث المستخدم بنجاح', 'success');
+                    hideEditUserModal();
+                    loadUsers(); // Reload users
+                } else {
+                    const errorText = await response.text();
+                    throw new Error(errorText);
+                }
+            } catch (error) {
+                console.error('❌ Update user error:', error);
+                showAlert('فشل في تحديث المستخدم: ' + error.message, 'danger');
+            }
+        });
+
+        // Logout function
+        function performLogout() {
+            if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
+                api.logout();
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Users page loaded');
+            loadUsers();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول - ExamPro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <h1 class="login-title">ExamPro</h1>
+                <p class="login-subtitle">منصة الاختبارات الإلكترونية المتقدمة</p>
+            </div>
+
+            <form id="loginForm">
+                <div id="alertContainer"></div>
+                
+                <div class="form-group">
+                    <label for="username" class="form-label">
+                        <i class="fas fa-user"></i>
+                        اسم المستخدم
+                    </label>
+                    <input 
+                        type="text" 
+                        id="username" 
+                        name="username" 
+                        class="form-control" 
+                        placeholder="أدخل اسم المستخدم"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="password" class="form-label">
+                        <i class="fas fa-lock"></i>
+                        كلمة المرور
+                    </label>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        name="password" 
+                        class="form-control" 
+                        placeholder="أدخل كلمة المرور"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <label style="display: flex; align-items: center; gap: 0.5rem;">
+                            <input type="checkbox" id="remember">
+                            <span style="font-size: 0.9rem; color: var(--gray-600);">تذكرني</span>
+                        </label>
+                        <a href="#" style="color: var(--primary); text-decoration: none; font-size: 0.9rem;">
+                            نسيت كلمة المرور؟
+                        </a>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">
+                    <span id="btnText">تسجيل الدخول</span>
+                    <div id="btnSpinner" class="spinner" style="display: none;"></div>
+                </button>
+            </form>
+
+            <div style="margin-top: 2rem; text-align: center;">
+                <p style="color: var(--gray-600); margin-bottom: 1rem;">حسابات تجريبية:</p>
+                <div style="display: grid; gap: 0.5rem; font-size: 0.85rem;">
+                    <div style="background: var(--gray-100); padding: 0.5rem; border-radius: 8px;">
+                        <strong>مدير:</strong> admin / Admin123
+                    </div>
+                    <div style="background: var(--gray-100); padding: 0.5rem; border-radius: 8px;">
+                        <strong>معلم:</strong> teacher1 / Teacher123
+                    </div>
+                    <div style="background: var(--gray-100); padding: 0.5rem; border-radius: 8px;">
+                        <strong>طالب:</strong> student1 / Student123
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 2rem; text-align: center; padding-top: 2rem; border-top: 1px solid var(--gray-200);">
+                <p style="color: var(--gray-600); font-size: 0.9rem;">
+                    ليس لديك حساب؟ 
+                    <a href="register.html" style="color: var(--primary); text-decoration: none; font-weight: 600;">
+                        إنشاء حساب جديد
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script>
+        // Login Form Handler
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const btnText = document.getElementById('btnText');
+            const btnSpinner = document.getElementById('btnSpinner');
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            
+            // Clear previous alerts
+            document.getElementById('alertContainer').innerHTML = '';
+            
+            // Show loading state
+            submitBtn.disabled = true;
+            btnText.style.display = 'none';
+            btnSpinner.style.display = 'inline-block';
+            
+            try {
+                console.log('Attempting login with:', username);
+                const result = await api.login(username, password);
+                console.log('Login result:', result);
+                console.log('User object after login:', api.user);
+                console.log('User type after login:', api.getUserType());
+                
+                showAlert('تم تسجيل الدخول بنجاح! جاري التحويل...', 'success');
+                
+                // Add success animation
+                document.querySelector('.login-card').style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    document.querySelector('.login-card').style.transform = 'scale(1)';
+                }, 200);
+                
+                // Redirect immediately without delay
+                console.log('Redirecting to dashboard...');
+                redirectToDashboard();
+                
+            } catch (error) {
+                console.error('Login error:', error);
+                showAlert(error.message || 'فشل تسجيل الدخول', 'danger');
+                
+                // Add error animation
+                document.querySelector('.login-card').classList.add('shake');
+                setTimeout(() => {
+                    document.querySelector('.login-card').classList.remove('shake');
+                }, 500);
+                
+                submitBtn.disabled = false;
+                btnText.style.display = 'inline';
+                btnSpinner.style.display = 'none';
+            }
+        });
+
+        // Auto-fill demo accounts
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is already logged in
+            if (api.isAuthenticated()) {
+                redirectToDashboard();
+                return;
+            }
+
+            // Add click handlers for demo accounts
+            const demoAccounts = document.querySelectorAll('[data-demo]');
+            demoAccounts.forEach(account => {
+                account.addEventListener('click', function() {
+                    const username = this.dataset.username;
+                    const password = this.dataset.password;
+                    document.getElementById('username').value = username;
+                    document.getElementById('password').value = password;
+                });
+            });
+
+            // Focus on username field
+            document.getElementById('username').focus();
+        });
+
+        // Custom alert function for login page
+        function showAlert(message, type = 'info') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.textContent = message;
+            
+            document.getElementById('alertContainer').appendChild(alertDiv);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.parentNode.removeChild(alertDiv);
+                }
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

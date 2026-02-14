@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم المعلم - ExamPro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header
+            style="background: white; padding: 1rem 0; border-radius: 16px; margin-bottom: 2rem; box-shadow: var(--shadow-lg);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div
+                        style="width: 50px; height: 50px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-chalkboard-teacher" style="color: white; font-size: 1.5rem;"></i>
+                    </div>
+                    <div>
+                        <h1 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-800); margin: 0;">لوحة تحكم
+                            المعلم</h1>
+                        <p style="color: var(--gray-600); margin: 0; font-size: 0.9rem;">مرحباً بك في لوحة التحكم</p>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <button class="btn btn-secondary" onclick="performLogout()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        تسجيل الخروج
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Statistics Cards -->
+        <div
+            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+            <div class="card" style="text-align: center;">
+                <div
+                    style="width: 60px; height: 60px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                    <i class="fas fa-graduation-cap" style="color: white; font-size: 1.5rem;"></i>
+                </div>
+                <h3 style="font-size: 2rem; font-weight: 800; color: var(--success); margin: 0;" id="myCourses">12</h3>
+                <p style="color: var(--gray-600); margin: 0.5rem 0;">دوراتي</p>
+                <div style="color: var(--success); font-size: 0.9rem;">
+                    <i class="fas fa-arrow-up"></i> +2 هذا الشهر
+                </div>
+            </div>
+
+            <div class="card" style="text-align: center;">
+                <div
+                    style="width: 60px; height: 60px; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                    <i class="fas fa-clipboard-list" style="color: white; font-size: 1.5rem;"></i>
+                </div>
+                <h3 style="font-size: 2rem; font-weight: 800; color: var(--warning); margin: 0;" id="myExams">28</h3>
+                <p style="color: var(--gray-600); margin: 0.5rem 0;">اختباراتي</p>
+                <div style="color: var(--success); font-size: 0.9rem;">
+                    <i class="fas fa-arrow-up"></i> +5 هذا الأسبوع
+                </div>
+            </div>
+
+            <div class="card" style="text-align: center;">
+                <div
+                    style="width: 60px; height: 60px; background: linear-gradient(135deg, #3b82f6, #2563eb); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                    <i class="fas fa-users" style="color: white; font-size: 1.5rem;"></i>
+                </div>
+                <h3 style="font-size: 2rem; font-weight: 800; color: var(--primary); margin: 0;" id="myStudents">156
+                </h3>
+                <p style="color: var(--gray-600); margin: 0.5rem 0;">طلابي</p>
+                <div style="color: var(--success); font-size: 0.9rem;">
+                    <i class="fas fa-arrow-up"></i> +18 هذا الشهر
+                </div>
+            </div>
+
+            <div class="card" style="text-align: center;">
+                <div
+                    style="width: 60px; height: 60px; background: linear-gradient(135deg, #8b5cf6, #7c3aed); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                    <i class="fas fa-chart-line" style="color: white; font-size: 1.5rem;"></i>
+                </div>
+                <h3 style="font-size: 2rem; font-weight: 800; color: var(--secondary); margin: 0;">85%</h3>
+                <p style="color: var(--gray-600); margin: 0.5rem 0;">معدل النجاح</p>
+                <div style="color: var(--success); font-size: 0.9rem;">
+                    <i class="fas fa-arrow-up"></i> +3% هذا الشهر
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">إجراءات سريعة</h2>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                <button class="btn btn-primary" onclick="createNewExam()">
+                    <i class="fas fa-plus"></i>
+                    إنشاء اختبار جديد
+                </button>
+                <button class="btn btn-success" onclick="window.location.href='courses.html'">
+                    <i class="fas fa-graduation-cap"></i>
+                    إدارة الدورات
+                </button>
+                <button class="btn btn-info" onclick="window.location.href='profile.html'">
+                    <i class="fas fa-user"></i>
+                    الملف الشخصي
+                </button>
+                <button class="btn btn-warning" onclick="viewResults()">
+                    <i class="fas fa-chart-bar"></i>
+                    عرض النتائج
+                </button>
+                <button class="btn btn-secondary" onclick="manageStudents()">
+                    <i class="fas fa-users"></i>
+                    إدارة الطلاب
+                </button>
+                <button class="btn btn-info" onclick="createSampleExam()">
+                    <i class="fas fa-flask"></i>
+                    إنشاء اختبار تجريبي
+                </button>
+            </div>
+        </div>
+
+        <!-- Recent Exams -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">الاختبارات الأخيرة</h2>
+            </div>
+            <div id="recentExams" style="max-height: 400px; overflow-y: auto;">
+                <!-- Exams will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script>
+        // Check authentication
+        function checkAuth() {
+            const token = localStorage.getItem('token');
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+            console.log('🔐 Checking authentication...');
+            console.log('🔐 Token exists:', !!token);
+            console.log('🔐 User:', user);
+
+            if (!token || !user.userType) {
+                console.log('❌ No token or user type found');
+                return false;
+            }
+
+            return true;
+        }
+
+        // Load Dashboard Data
+        async function loadDashboardData() {
+            try {
+                console.log('📊 Loading dashboard data...');
+
+                // Load real statistics from API
+                const stats = await getTeacherStatistics();
+                console.log('📊 Teacher statistics:', stats);
+
+                // Update statistics cards with real data
+                document.getElementById('myCourses').textContent = stats.courses || 0;
+                document.getElementById('myExams').textContent = stats.exams || 0;
+                document.getElementById('myStudents').textContent = stats.students || 0;
+
+                // Load real recent exams
+                const exams = await getTeacherExams();
+                console.log('📊 Teacher exams:', exams);
+
+                if (exams && exams.length > 0) {
+                    const examsHtml = exams.map(exam => `
+                        <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; border-bottom: 1px solid var(--gray-100); hover: background: var(--gray-50); cursor: pointer;" onclick="viewExamDetails(${exam.Id})">
+                            <div style="width: 40px; height: 40px; background: ${exam.IsPublished ? 'var(--success)' : 'var(--warning)'}; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-clipboard-list" style="color: white; font-size: 1rem;"></i>
+                            </div>
+                            <div style="flex: 1;">
+                                <h4 style="margin: 0; font-size: 1rem; color: var(--gray-800);">${exam.Title}</h4>
+                                <p style="margin: 0.25rem 0; color: var(--gray-600); font-size: 0.9rem;">${exam.CourseName || 'دورة غير محددة'}</p>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="color: var(--gray-500); font-size: 0.8rem;">${formatDate(exam.StartDate)}</span>
+                                    <span style="color: ${exam.IsPublished ? 'var(--success)' : 'var(--warning)'}; font-size: 0.8rem; font-weight: 600;">
+                                        ${exam.IsPublished ? 'منشور' : 'مسود'} • ${exam.StudentCount || 0} طالب
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+
+                    document.getElementById('recentExams').innerHTML = examsHtml;
+                } else {
+                    document.getElementById('recentExams').innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--gray-500);">لا توجد اختبارات</div>';
+                }
+
+            } catch (error) {
+                console.error('❌ Failed to load dashboard data:', error);
+                showAlert('فشل في تحميل بيانات لوحة التحكم: ' + error.message, 'danger');
+            }
+        }
+
+        // Get teacher statistics
+        async function getTeacherStatistics() {
+            try {
+                console.log('📊 Fetching teacher statistics...');
+                const response = await fetch(`${api.baseURL}/teacher/statistics`, {
+                    headers: {
+                        'Authorization': `Bearer ${api.token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                console.log('📊 Statistics response status:', response.status);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.log('📊 Statistics error response:', errorText);
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+                }
+
+                const data = await response.json();
+                console.log('📊 Statistics data received:', data);
+                return data;
+            } catch (error) {
+                console.error('❌ Failed to get teacher statistics:', error);
+                // Return default values if API fails
+                return { courses: 0, exams: 0, students: 0 };
+            }
+        }
+
+        // Get teacher exams
+        async function getTeacherExams() {
+            try {
+                console.log('📋 Fetching teacher exams...');
+                console.log('📋 Token:', api.token ? 'exists' : 'missing');
+                console.log('📋 Base URL:', api.baseURL);
+
+                const response = await fetch(`${api.baseURL}/teacher/exams`, {
+                    headers: {
+                        'Authorization': `Bearer ${api.token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                console.log('📋 Exams response status:', response.status);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.log('📋 Exams error response:', errorText);
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+                }
+
+                const data = await response.json();
+                console.log('📋 Exams data received:', data);
+                return data;
+            } catch (error) {
+                console.error('❌ Failed to get teacher exams:', error);
+                return [];
+            }
+        }
+
+        // View exam details
+        function viewExamDetails(examId) {
+            console.log('📋 Viewing exam details for ID:', examId);
+            showAlert(`جاري فتح تفاصيل الاختبار ${examId}...`, 'info');
+            // TODO: Navigate to exam details page
+        }
+
+        // Format date
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('ar-SA', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        // Action functions
+        function createNewExam() {
+            console.log('➕ Creating new exam...');
+            // Create a simple exam creation modal
+            showCreateExamModal();
+        }
+
+        function manageCourses() {
+            console.log('📚 Managing courses...');
+            // Show teacher's courses
+            window.location.href = '../admin/courses.html';
+        }
+
+        function viewResults() {
+            console.log('📊 Viewing results...');
+            // Show results page
+            showAlert('صفحة النتائج قيد التطوير', 'info');
+        }
+
+        function manageStudents() {
+            console.log('� Managing students...');
+            // Show students page
+            showAlert('صفحة الطلاب قيد التطوير', 'info');
+        }
+
+        // Show create exam modal
+        async function showCreateExamModal() {
+            // Load teacher's courses first
+            const courses = await getTeacherCourses();
+
+            console.log('📚 Courses loaded:', courses);
+            console.log('📚 Number of courses:', courses.length);
+
+            if (courses.length === 0) {
+                showAlert('لا توجد دورات متاحة لإنشاء اختبار', 'warning');
+                return;
+            }
+
+            // Try different possible field names
+            const courseOptions = courses.map(course => {
+                console.log('📚 Processing course:', course);
+                console.log('📚 Course keys:', Object.keys(course));
+
+                const courseId = course.Id || course.id || course.courseId || course.course_id;
+                const courseName = course.CourseName || course.courseName || course.course_name || course.name;
+
+                console.log('📚 Mapped ID:', courseId);
+                console.log('📚 Mapped Name:', courseName);
+
+                return `<option value="${courseId}">${courseName || 'دورة بدون اسم'}</option>`;
+            }).join('');
+
+            console.log('📚 Course options generated:', courseOptions);
+
+            const modalHtml = `
+                <div id="createExamModal" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;">
+                    <div style="background: white; padding: 2rem; border-radius: 16px; max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto;">
+                        <h2 style="margin-top: 0; color: var(--gray-800);">إنشاء اختبار جديد</h2>
+                        <form id="createExamForm">
+                            <div style="margin-bottom: 1rem;">
+                                <label style="display: block; margin-bottom: 0.5rem; color: var(--gray-700); font-weight: 600;">الدورة *</label>
+                                <select id="examCourseId" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                                    <option value="">اختر الدورة</option>
+                                    ${courseOptions}
+                                </select>
+                            </div>
+                            <div style="margin-bottom: 1rem;">
+                                <label style="display: block; margin-bottom: 0.5rem; color: var(--gray-700); font-weight: 600;">عنوان الاختبار *</label>
+                                <input type="text" id="examTitle" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                            </div>
+                            <div style="margin-bottom: 1rem;">
+                                <label style="display: block; margin-bottom: 0.5rem; color: var(--gray-700); font-weight: 600;">وصف الاختبار</label>
+                                <textarea id="examDescription" rows="3" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;"></textarea>
+                            </div>
+                            <div style="margin-bottom: 1rem;">
+                                <label style="display: block; margin-bottom: 0.5rem; color: var(--gray-700); font-weight: 600;">مدة الاختبار (دقائق) *</label>
+                                <input type="number" id="examDuration" value="60" min="1" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                            </div>
+                            <div style="margin-bottom: 1rem;">
+                                <label style="display: block; margin-bottom: 0.5rem; color: var(--gray-700); font-weight: 600;">الدرجة الكاملة *</label>
+                                <input type="number" id="examTotalMarks" value="100" min="1" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                            </div>
+                            <div style="margin-bottom: 1rem;">
+                                <label style="display: block; margin-bottom: 0.5rem; color: var(--gray-700); font-weight: 600;">درجة النجاح *</label>
+                                <input type="number" id="examPassingScore" value="60" min="1" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                            </div>
+                            <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                                <button type="button" onclick="hideCreateExamModal()" class="btn btn-secondary">إلغاء</button>
+                                <button type="submit" class="btn btn-primary">إنشاء الاختبار</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+            // Add form submit handler
+            document.getElementById('createExamForm').addEventListener('submit', handleCreateExam);
+        }
+
+        // Get teacher's courses
+        async function getTeacherCourses() {
+            try {
+                console.log('📚 Fetching teacher courses...');
+                // Use teacher-specific endpoint
+                const response = await fetch(`${api.baseURL}/teacher/courses`, {
+                    headers: {
+                        'Authorization': `Bearer ${api.token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                console.log('📚 Courses response status:', response.status);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.log('📚 Courses error response:', errorText);
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+                }
+
+                const courses = await response.json();
+                console.log('📚 Courses data received:', courses);
+                console.log('📚 First course data:', courses[0]);
+                console.log('📚 All course keys:', courses.length > 0 ? Object.keys(courses[0]) : 'No courses');
+
+                return courses;
+            } catch (error) {
+                console.error('❌ Failed to get teacher courses:', error);
+                return [];
+            }
+        }
+
+        function hideCreateExamModal() {
+            const modal = document.getElementById('createExamModal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+
+        async function handleCreateExam(e) {
+            e.preventDefault();
+
+            try {
+                const examData = {
+                    Title: document.getElementById('examTitle').value,
+                    Description: document.getElementById('examDescription').value,
+                    DurationMinutes: parseInt(document.getElementById('examDuration').value),
+                    TotalMarks: parseInt(document.getElementById('examTotalMarks').value),
+                    PassingScore: parseInt(document.getElementById('examPassingScore').value),
+                    CourseId: parseInt(document.getElementById('examCourseId').value),
+                    StartDate: new Date().toISOString(),
+                    EndDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+                };
+
+                console.log('📝 Creating exam:', examData);
+
+                const response = await fetch(`${api.baseURL}/teacher/exams`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${api.token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(examData)
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log('✅ Exam created successfully:', result);
+                    showAlert('تم إنشاء الاختبار بنجاح!', 'success');
+                    hideCreateExamModal();
+                    loadDashboardData(); // Reload dashboard
+                } else {
+                    const errorText = await response.text();
+                    console.log('❌ Failed to create exam:', errorText);
+                    showAlert('فشل في إنشاء الاختبار: ' + errorText, 'danger');
+                }
+            } catch (error) {
+                console.error('❌ Error creating exam:', error);
+                showAlert('خطأ في إنشاء الاختبار: ' + error.message, 'danger');
+            }
+        }
+
+        // Create sample exam for testing
+        async function createSampleExam() {
+            try {
+                console.log('🧪 Creating sample exam for testing...');
+
+                // Get first available course
+                const courses = await getTeacherCourses();
+                if (courses.length === 0) {
+                    showAlert('لا توجد دورات متاحة لإنشاء اختبار', 'warning');
+                    return;
+                }
+
+                const sampleExam = {
+                    Title: 'اختبار تجريبي',
+                    Description: 'هذا اختبار تجريبي لاختبار الوظائف',
+                    CourseId: courses[0].Id, // Use first available course
+                    DurationMinutes: 60,
+                    TotalMarks: 100,
+                    PassingScore: 60,
+                    StartDate: new Date().toISOString(),
+                    EndDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // 7 days from now
+                };
+
+                const response = await fetch(`${api.baseURL}/teacher/exams`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${api.token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(sampleExam)
+                });
+
+                if (response.ok) {
+                    console.log('✅ Sample exam created successfully');
+                    showAlert('تم إنشاء اختبار تجريبي بنجاح', 'success');
+                    loadDashboardData(); // Reload dashboard data
+                } else {
+                    const errorText = await response.text();
+                    console.log('❌ Failed to create sample exam:', errorText);
+                    showAlert('فشل في إنشاء اختبار تجريبي', 'danger');
+                }
+            } catch (error) {
+                console.error('❌ Error creating sample exam:', error);
+                showAlert('خطأ في إنشاء اختبار تجريبي', 'danger');
+            }
+        }
+
+        // Show alert function (if not already defined)
+        function showAlert(message, type = 'info') {
+            const alertDiv = document.createElement('div');
+            alertDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 1rem 1.5rem;
+                border-radius: 8px;
+                color: white;
+                font-weight: 600;
+                z-index: 9999;
+                max-width: 300px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            `;
+
+            switch (type) {
+                case 'success':
+                    alertDiv.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+                    break;
+                case 'danger':
+                    alertDiv.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+                    break;
+                case 'warning':
+                    alertDiv.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
+                    break;
+                default:
+                    alertDiv.style.background = 'linear-gradient(135deg, #3b82f6, #2563eb)';
+            }
+
+            alertDiv.textContent = message;
+            document.body.appendChild(alertDiv);
+
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.parentNode.removeChild(alertDiv);
+                }
+            }, 3000);
+        }
+
+        // Check authentication
+        function checkAuth() {
+            const token = localStorage.getItem('token');
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+            console.log('🔐 Checking authentication...');
+            console.log('🔐 Token exists:', !!token);
+            console.log('🔐 User:', user);
+
+            if (!token || !user.userType) {
+                console.log('❌ No token or user type found');
+                return false;
+            }
+
+            return true;
+        }
+
+        // Check if user is teacher
+        function checkTeacherRole() {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            console.log('👨‍🏫 Checking teacher role...');
+            console.log('👨‍🏫 User type:', user.userType);
+
+            if (user.userType !== 'Teacher') {
+                console.log('❌ User is not a teacher');
+                return false;
+            }
+
+            return true;
+        }
+
+        // Logout function
+        function performLogout() {
+            if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
+                api.logout();
+            }
+        }
+
+        // Initialize Dashboard
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('🚀 Initializing dashboard...');
+
+            // Check authentication and role
+            if (!checkAuth()) {
+                console.log('❌ Redirecting to login...');
+                window.location.href = '../login.html';
+                return;
+            }
+
+            if (!checkTeacherRole()) {
+                console.log('❌ User not authorized for teacher dashboard');
+                showAlert('غير مصرح لك بالوصول لهذه الصفحة', 'danger');
+                setTimeout(() => {
+                    window.location.href = '../login.html';
+                }, 2000);
+                return;
+            }
+
+            console.log('✅ Authentication and role check passed');
+            loadDashboardData();
+        });
+    </script>
+</body>
+
+</html>

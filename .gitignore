@@ -1,0 +1,32 @@
+# Visual Studio Code
+.vscode/
+
+# Build results
+/bin/
+/obj/
+/Backend/bin/
+/Backend/obj/
+
+# Backend dependencies and user-specific files
+/Backend/*.user
+/Backend/*.suo
+/Backend/*.userprefs
+/Backend/appsettings.Development.json
+
+# Frontend dependencies and dist folders (Node.js)
+/Frontend/node_modules/
+/Frontend/dist/
+/Frontend/.next/
+/Frontend/out/
+
+# Python cache (if any python scripts are used)
+__pycache__/
+*.py[cod]
+*.venv/
+
+# System files
+thumbs.db
+.DS_Store
+
+# Logs
+*.log

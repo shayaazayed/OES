@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم الطالب - ExamPro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header
+            style="background: white; padding: 1rem 0; border-radius: 16px; margin-bottom: 2rem; box-shadow: var(--shadow-lg);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div
+                        style="width: 50px; height: 50px; background: linear-gradient(135deg, #3b82f6, #2563eb); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-user-graduate" style="color: white; font-size: 1.5rem;"></i>
+                    </div>
+                    <div>
+                        <h1 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-800); margin: 0;">لوحة تحكم
+                            الطالب</h1>
+                        <p style="color: var(--gray-600); margin: 0; font-size: 0.9rem;">مرحباً بك في لوحة التحكم</p>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <button class="btn btn-secondary" onclick="performLogout()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        تسجيل الخروج
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Statistics Cards -->
+        <div
+            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+            <div class="card" style="text-align: center;">
+                <div
+                    style="width: 60px; height: 60px; background: linear-gradient(135deg, #3b82f6, #2563eb); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                    <i class="fas fa-graduation-cap" style="color: white; font-size: 1.5rem;"></i>
+                </div>
+                <h3 style="font-size: 2rem; font-weight: 800; color: var(--primary); margin: 0;" id="enrolledCourses">6
+                </h3>
+                <p style="color: var(--gray-600); margin: 0.5rem 0;">الدورات المسجلة</p>
+                <div style="color: var(--success); font-size: 0.9rem;">
+                    <i class="fas fa-arrow-up"></i> +1 هذا الشهر
+                </div>
+            </div>
+
+            <div class="card" style="text-align: center;">
+                <div
+                    style="width: 60px; height: 60px; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                    <i class="fas fa-clipboard-list" style="color: white; font-size: 1.5rem;"></i>
+                </div>
+                <h3 style="font-size: 2rem; font-weight: 800; color: var(--warning); margin: 0;" id="availableExams">4
+                </h3>
+                <p style="color: var(--gray-600); margin: 0.5rem 0;">الاختبارات المتاحة</p>
+                <div style="color: var(--warning); font-size: 0.9rem;">
+                    <i class="fas fa-clock"></i> 2 جديد هذا الأسبوع
+                </div>
+            </div>
+
+            <div class="card" style="text-align: center;">
+                <div
+                    style="width: 60px; height: 60px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                    <i class="fas fa-check-circle" style="color: white; font-size: 1.5rem;"></i>
+                </div>
+                <h3 style="font-size: 2rem; font-weight: 800; color: var(--success); margin: 0;" id="completedExams">18
+                </h3>
+                <p style="color: var(--gray-600); margin: 0.5rem 0;">الاختبارات المكتملة</p>
+                <div style="color: var(--success); font-size: 0.9rem;">
+                    <i class="fas fa-arrow-up"></i> +3 هذا الشهر
+                </div>
+            </div>
+
+            <div class="card" style="text-align: center;">
+                <div
+                    style="width: 60px; height: 60px; background: linear-gradient(135deg, #8b5cf6, #7c3aed); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                    <i class="fas fa-trophy" style="color: white; font-size: 1.5rem;"></i>
+                </div>
+                <h3 style="font-size: 2rem; font-weight: 800; color: var(--secondary); margin: 0;">92%</h3>
+                <p style="color: var(--gray-600); margin: 0.5rem 0;">متوسط الدرجات</p>
+                <div style="color: var(--success); font-size: 0.9rem;">
+                    <i class="fas fa-arrow-up"></i> +5% هذا الشهر
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">إجراءات سريعة</h2>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                <button class="btn btn-primary" onclick="showAlert('جاري فتح صفحة الاختبارات...', 'info')">
+                    <i class="fas fa-clipboard-list"></i>
+                    عرض الاختبارات
+                </button>
+                <button class="btn btn-success" onclick="showAlert('جاري فتح صفحة الدورات...', 'info')">
+                    <i class="fas fa-graduation-cap"></i>
+                    دوراتي
+                </button>
+                <button class="btn btn-warning" onclick="showAlert('جاري فتح صفحة النتائج...', 'info')">
+                    <i class="fas fa-chart-bar"></i>
+                    نتائجي
+                </button>
+                <button class="btn btn-secondary" onclick="showAlert('جاري فتح صفحة الملف الشخصي...', 'info')">
+                    <i class="fas fa-user"></i>
+                    الملف الشخصي
+                </button>
+            </div>
+        </div>
+
+        <!-- Available Exams -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">الاختبارات المتاحة</h2>
+            </div>
+            <div id="availableExamsList" style="max-height: 400px; overflow-y: auto;">
+                <!-- Exams will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Recent Results -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">أحدث النتائج</h2>
+            </div>
+            <div id="recentResults" style="max-height: 400px; overflow-y: auto;">
+                <!-- Results will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script>
+        // Check authentication
+        if (!checkAuth()) {
+            window.location.href = '../login.html';
+        }
+
+        // Check if user is student
+        if (!api.isStudent()) {
+            showAlert('غير مصرح لك بالوصول لهذه الصفحة', 'danger');
+            setTimeout(() => {
+                window.location.href = '../login.html';
+            }, 2000);
+        }
+
+        // Load Dashboard Data
+        async function loadDashboardData() {
+            try {
+                console.log('📊 Loading student dashboard data...');
+
+                // Load available exams from database
+                try {
+                    const response = await fetch(`${api.baseURL}/student/exams/available`, {
+                        headers: {
+                            'Authorization': `Bearer ${api.token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (response.ok) {
+                        const availableExams = await response.json();
+                        console.log('✅ Available exams loaded:', availableExams);
+
+                        const availableExamsHtml = availableExams.map(exam => `
+                            <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; border-bottom: 1px solid var(--gray-100); hover: background: var(--gray-50);">
+                                <div style="width: 40px; height: 40px; background: var(--warning); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-clipboard-list" style="color: white; font-size: 1rem;"></i>
+                                </div>
+                                <div style="flex: 1;">
+                                    <h4 style="margin: 0; font-size: 1rem; color: var(--gray-800);">${exam.Title}</h4>
+                                    <p style="margin: 0.25rem 0; color: var(--gray-600); font-size: 0.9rem;">${exam.CourseName}</p>
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span style="color: var(--gray-500); font-size: 0.8rem;">
+                                            <i class="fas fa-clock"></i> ${exam.DurationMinutes} دقيقة • ${exam.QuestionCount} سؤال
+                                        </span>
+                                        <button class="btn btn-primary btn-sm" onclick="startExam(${exam.Id})" ${exam.IsTaken ? 'disabled' : ''}>
+                                            ${exam.IsTaken ? 'تم أداؤه' : 'بدء الاختبار'}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('');
+
+                        document.getElementById('availableExamsList').innerHTML = availableExamsHtml;
+                    } else {
+                        throw new Error('Failed to load available exams');
+                    }
+                } catch (error) {
+                    console.log('⚠️ Using fallback available exams:', error);
+                    // Fallback to sample exams
+                    const availableExams = [
+                        { Title: 'اختبار الرياضيات', Course: 'الرياضيات التطبيقية', Duration: '60 دقيقة', Questions: 20, Deadline: '2024-02-15T23:59:00' },
+                        { Title: 'اختبار البرمجة', Course: 'مقدمة في البرمجة', Duration: '90 دقيقة', Questions: 30, Deadline: '2024-02-18T23:59:00' },
+                        { Title: 'اختبار الفيزياء', Course: 'الفيزياء العامة', Duration: '45 دقيقة', Questions: 15, Deadline: '2024-02-20T23:59:00' },
+                        { Title: 'اختبار الكيمياء', Course: 'الكيمياء العضوية', Duration: '75 دقيقة', Questions: 25, Deadline: '2024-02-22T23:59:00' }
+                    ];
+
+                    const availableExamsHtml = availableExams.map(exam => `
+                        <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; border-bottom: 1px solid var(--gray-100); hover: background: var(--gray-50);">
+                            <div style="width: 40px; height: 40px; background: var(--warning); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-clipboard-list" style="color: white; font-size: 1rem;"></i>
+                            </div>
+                            <div style="flex: 1;">
+                                <h4 style="margin: 0; font-size: 1rem; color: var(--gray-800);">${exam.Title}</h4>
+                                <p style="margin: 0.25rem 0; color: var(--gray-600); font-size: 0.9rem;">${exam.Course}</p>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="color: var(--gray-500); font-size: 0.8rem;">
+                                        <i class="fas fa-clock"></i> ${exam.Duration} • ${exam.Questions} سؤال
+                                    </span>
+                                    <button class="btn btn-primary btn-sm" onclick="startExam('${exam.Title}')">
+                                        بدء الاختبار
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+
+                    document.getElementById('availableExamsList').innerHTML = availableExamsHtml;
+                }
+
+                // Load recent results from database
+                try {
+                    const response = await fetch(`${api.baseURL}/student/history`, {
+                        headers: {
+                            'Authorization': `Bearer ${api.token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (response.ok) {
+                        const recentResults = await response.json();
+                        console.log('✅ Recent results loaded:', recentResults);
+
+                        const recentResultsHtml = recentResults.map(result => `
+                            <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; border-bottom: 1px solid var(--gray-100); hover: background: var(--gray-50);">
+                                <div style="width: 40px; height: 40px; background: ${result.Passed ? 'var(--success)' : 'var(--danger)'}; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas ${result.Passed ? 'fa-check' : 'fa-times'}" style="color: white; font-size: 1rem;"></i>
+                                </div>
+                                <div style="flex: 1;">
+                                    <h4 style="margin: 0; font-size: 1rem; color: var(--gray-800);">${result.ExamTitle}</h4>
+                                    <p style="margin: 0.25rem 0; color: var(--gray-600); font-size: 0.9rem;">${result.CourseName}</p>
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span style="color: var(--gray-500); font-size: 0.8rem;">${formatDate(result.SubmittedTime)}</span>
+                                        <span style="color: ${result.Passed ? 'var(--success)' : 'var(--danger)'}; font-size: 0.9rem; font-weight: 600;">
+                                            ${result.Percentage.toFixed(1)}%
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('');
+
+                        document.getElementById('recentResults').innerHTML = recentResultsHtml;
+                    } else {
+                        throw new Error('Failed to load recent results');
+                    }
+                } catch (error) {
+                    console.log('⚠️ Using fallback recent results:', error);
+                    // Fallback to sample results
+                    const recentResults = [
+                        { Exam: 'اختبار الاحصاء', Course: 'الاحصاء التطبيقي', Score: 88, Date: '2024-02-05T14:30:00', Status: 'Passed' },
+                        { Exam: 'اختبار اللغة العربية', Course: 'اللغة العربية', Score: 92, Date: '2024-02-03T10:15:00', Status: 'Passed' },
+                        { Exam: 'اختبار التاريخ', Course: 'التاريخ الإسلامي', Score: 85, Date: '2024-02-01T09:45:00', Status: 'Passed' },
+                        { Exam: 'اختبار الجغرافيا', Course: 'الجغرافيا الطبيعية', Score: 90, Date: '2024-01-30T11:20:00', Status: 'Passed' }
+                    ];
+
+                    const recentResultsHtml = recentResults.map(result => `
+                        <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; border-bottom: 1px solid var(--gray-100); hover: background: var(--gray-50);">
+                            <div style="width: 40px; height: 40px; background: ${result.Status === 'Passed' ? 'var(--success)' : 'var(--danger)'}; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas ${result.Status === 'Passed' ? 'fa-check' : 'fa-times'}" style="color: white; font-size: 1rem;"></i>
+                            </div>
+                            <div style="flex: 1;">
+                                <h4 style="margin: 0; font-size: 1rem; color: var(--gray-800);">${result.Exam}</h4>
+                                <p style="margin: 0.25rem 0; color: var(--gray-600); font-size: 0.9rem;">${result.Course}</p>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="color: var(--gray-500); font-size: 0.8rem;">${formatDate(result.Date)}</span>
+                                    <span style="color: ${result.Status === 'Passed' ? 'var(--success)' : 'var(--danger)'}; font-size: 0.9rem; font-weight: 600;">
+                                        ${result.Score}%
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+
+                    document.getElementById('recentResults').innerHTML = recentResultsHtml;
+                }
+
+            } catch (error) {
+                console.error('❌ Failed to load dashboard data:', error);
+                showAlert('فشل في تحميل بيانات لوحة التحكم: ' + error.message, 'danger');
+            }
+        }
+
+        // Start exam function
+        async function startExam(examId) {
+            try {
+                console.log('🚀 Starting exam:', examId);
+
+                const response = await fetch(`${api.baseURL}/student/exams/${examId}/start`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${api.token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log('✅ Exam started:', result);
+                    showAlert('جاري بدء الاختبار...', 'info');
+                    // Redirect to exam page
+                    window.location.href = `exam.html?id=${examId}`;
+                } else {
+                    const errorText = await response.text();
+                    console.log('❌ Failed to start exam:', errorText);
+                    showAlert('فشل في بدء الاختبار: ' + errorText, 'danger');
+                }
+            } catch (error) {
+                console.error('❌ Error starting exam:', error);
+                showAlert('خطأ في بدء الاختبار: ' + error.message, 'danger');
+            }
+        }
+
+        // Logout function
+        function performLogout() {
+            console.log('🚪 Logout button clicked');
+            if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
+                api.logout();
+            }
+        }
+
+        // Initialize Dashboard
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('🚀 Student dashboard page loaded');
+            loadDashboardData();
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة المستخدمين - ExamPro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header style="background: white; padding: 1rem 0; border-radius: 16px; margin-bottom: 2rem; box-shadow: var(--shadow-lg);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <button class="btn btn-secondary" onclick="window.location.href='dashboard.html'">
+                        <i class="fas fa-arrow-right"></i>
+                        رجوع
+                    </button>
+                    <div>
+                        <h1 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-800); margin: 0;">إدارة المستخدمين</h1>
+                        <p style="color: var(--gray-600); margin: 0; font-size: 0.9rem;">إضافة وحذف وتعديل المستخدمين</p>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <button class="btn btn-primary" onclick="showAddUserModal()">
+                        <i class="fas fa-user-plus"></i>
+                        إضافة مستخدم جديد
+                    </button>
+                    <button class="btn btn-secondary" onclick="performLogout()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        تسجيل الخروج
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Users Table -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">قائمة المستخدمين</h2>
+                <div style="display: flex; gap: 1rem;">
+                    <input type="text" id="searchInput" placeholder="البحث عن مستخدم..." style="padding: 0.5rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                    <select id="roleFilter" style="padding: 0.5rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                        <option value="">جميع الأدوار</option>
+                        <option value="Admin">مدير</option>
+                        <option value="Teacher">معلم</option>
+                        <option value="Student">طالب</option>
+                    </select>
+                </div>
+            </div>
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: var(--gray-50);">
+                            <th style="padding: 1rem; text-align: right; border-bottom: 1px solid var(--gray-200);">المعرف</th>
+                            <th style="padding: 1rem; text-align: right; border-bottom: 1px solid var(--gray-200);">اسم المستخدم</th>
+                            <th style="padding: 1rem; text-align: right; border-bottom: 1px solid var(--gray-200);">البريد الإلكتروني</th>
+                            <th style="padding: 1rem; text-align: right; border-bottom: 1px solid var(--gray-200);">الدور</th>
+                            <th style="padding: 1rem; text-align: right; border-bottom: 1px solid var(--gray-200);">الحالة</th>
+                            <th style="padding: 1rem; text-align: right; border-bottom: 1px solid var(--gray-200);">الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <!-- Users will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add User Modal -->
+    <div id="addUserModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 2rem; border-radius: 16px; width: 90%; max-width: 500px;">
+            <h3 style="margin-bottom: 1.5rem;">إضافة مستخدم جديد</h3>
+            <form id="addUserForm">
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">الاسم الكامل</label>
+                    <input type="text" id="newFullName" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">اسم المستخدم</label>
+                    <input type="text" id="newUsername" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">البريد الإلكتروني</label>
+                    <input type="email" id="newEmail" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">كلمة المرور</label>
+                    <input type="password" id="newPassword" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                </div>
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">الدور</label>
+                    <select id="newRole" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                        <option value="">اختر الدور</option>
+                        <option value="Admin">مدير</option>
+                        <option value="Teacher">معلم</option>
+                        <option value="Student">طالب</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="hideAddUserModal()">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">إضافة مستخدم</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script>
+        // Check authentication
+        if (!checkAuth()) {
+            window.location.href = '../login.html';
+        }
+
+        // Check if user is admin
+        if (!api.isAdmin()) {
+            showAlert('غير مصرح لك بالوصول لهذه الصفحة', 'danger');
+            setTimeout(() => {
+                window.location.href = '../login.html';
+            }, 2000);
+        }
+
+        // Load users
+        async function loadUsers() {
+            try {
+                const users = await api.getAllUsers();
+                displayUsers(users);
+            } catch (error) {
+                showAlert('فشل في تحميل المستخدمين: ' + error.message, 'danger');
+            }
+        }
+
+        // Display users in table
+        function displayUsers(users) {
+            const tbody = document.getElementById('usersTableBody');
+            tbody.innerHTML = users.map(user => `
+                <tr>
+                    <td style="padding: 1rem; border-bottom: 1px solid var(--gray-100);">${user.Id}</td>
+                    <td style="padding: 1rem; border-bottom: 1px solid var(--gray-100);">${user.Username}</td>
+                    <td style="padding: 1rem; border-bottom: 1px solid var(--gray-100);">${user.Email || 'N/A'}</td>
+                    <td style="padding: 1rem; border-bottom: 1px solid var(--gray-100);">
+                        <span style="padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.875rem; font-weight: 600; 
+                            background: ${user.UserType === 'Admin' ? 'var(--danger)' : user.UserType === 'Teacher' ? 'var(--warning)' : 'var(--success)'}; 
+                            color: white;">
+                            ${user.UserType === 'Admin' ? 'مدير' : user.UserType === 'Teacher' ? 'معلم' : 'طالب'}
+                        </span>
+                    </td>
+                    <td style="padding: 1rem; border-bottom: 1px solid var(--gray-100);">
+                        <span style="padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.875rem; font-weight: 600; 
+                            background: var(--success); color: white;">
+                            نشط
+                        </span>
+                    </td>
+                    <td style="padding: 1rem; border-bottom: 1px solid var(--gray-100);">
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="btn btn-sm btn-primary" onclick="editUser(${user.Id})">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteUser(${user.Id})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Modal functions
+        function showAddUserModal() {
+            document.getElementById('addUserModal').style.display = 'block';
+        }
+
+        function hideAddUserModal() {
+            document.getElementById('addUserModal').style.display = 'none';
+            document.getElementById('addUserForm').reset();
+        }
+
+        // Add user form handler
+        document.getElementById('addUserForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const userData = {
+                fullName: document.getElementById('newFullName').value,
+                username: document.getElementById('newUsername').value,
+                email: document.getElementById('newEmail').value,
+                password: document.getElementById('newPassword').value,
+                userType: document.getElementById('newRole').value
+            };
+
+            try {
+                await api.createUser(userData);
+                showAlert('تم إضافة المستخدم بنجاح', 'success');
+                hideAddUserModal();
+                loadUsers(); // Reload users
+            } catch (error) {
+                showAlert('فشل في إضافة المستخدم: ' + error.message, 'danger');
+            }
+        });
+
+        // Delete user
+        async function deleteUser(userId) {
+            if (confirm('هل أنت متأكد من حذف هذا المستخدم؟')) {
+                try {
+                    await api.deleteUser(userId);
+                    showAlert('تم حذف المستخدم بنجاح', 'success');
+                    loadUsers(); // Reload users
+                } catch (error) {
+                    showAlert('فشل في حذف المستخدم: ' + error.message, 'danger');
+                }
+            }
+        }
+
+        // Edit user (placeholder)
+        function editUser(userId) {
+            showAlert('وظيفة التعديل قيد التطوير', 'info');
+        }
+
+        // Logout function
+        function performLogout() {
+            if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
+                api.logout();
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUsers();
+        });
+    </script>
+</body>
+</html>
