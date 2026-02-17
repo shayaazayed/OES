@@ -25,13 +25,125 @@ namespace ExamSystem.Controllers
 
         private int GetStudentId()
         {
-            return int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            var studentId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var id = int.Parse(studentId ?? "0");
+            Console.WriteLine($"👤 GetStudentId called, returning: {id}");
+            return id;
+        }
+
+        [HttpGet("debug")]
+        public async Task<IActionResult> DebugInfo()
+        {
+            var studentId = GetStudentId();
+            
+            Console.WriteLine($"🐛 Debug info for student ID: {studentId}");
+            
+            // Get all students
+            var allStudents = await _context.Users
+                .Where(u => u.UserType == "Student")
+                .Select(u => new { u.Id, u.FullName, u.Email })
+                .ToListAsync();
+            
+            // Get all enrollments without circular references
+            var allEnrollments = await _context.Enrollments
+                .Include(e => e.Student)
+                .Include(e => e.Course)
+                .ToListAsync();
+            
+            // Get all exams
+            var allExams = await _context.Exams
+                .Include(e => e.Course)
+                .ToListAsync();
+            
+            // Get student enrollments
+            var studentEnrollments = allEnrollments
+                .Where(e => e.StudentId == studentId)
+                .ToList();
+            
+            return Ok(new
+            {
+                CurrentStudentId = studentId,
+                AllStudentsCount = allStudents.Count,
+                AllEnrollmentsCount = allEnrollments.Count,
+                AllExamsCount = allExams.Count,
+                StudentEnrollmentsCount = studentEnrollments.Count,
+                StudentEnrollments = studentEnrollments.Select(e => new {
+                    e.Id,
+                    StudentId = e.StudentId,
+                    StudentName = e.Student.FullName,
+                    CourseId = e.CourseId,
+                    CourseName = e.Course.CourseName
+                }),
+                AllExams = allExams.Select(e => new {
+                    e.Id,
+                    e.Title,
+                    e.CourseId,
+                    CourseName = e.Course.CourseName,
+                    e.IsPublished,
+                    e.StartDate,
+                    e.EndDate
+                })
+            });
+        }
+
+        [HttpGet("courses")]
+        public async Task<IActionResult> GetEnrolledCourses()
+        {
+            var studentId = GetStudentId();
+
+            var enrolledCourses = await _context.Enrollments
+                .Where(e => e.StudentId == studentId)
+                .Include(e => e.Course)
+                .Include(e => e.Course.Teacher)
+                .Select(e => new
+                {
+                    e.Course.Id,
+                    e.Course.CourseCode,
+                    CourseName = e.Course.CourseName,
+                    e.Course.Description,
+                    e.Course.CreatedDate,
+                    Teacher = e.Course.Teacher != null ? new { e.Course.Teacher.Id, e.Course.Teacher.FullName } : null,
+                    EnrollmentDate = e.EnrolledDate,
+                    ExamCount = e.Course.Exams.Count(exam => exam.IsPublished),
+                    CompletedExamCount = e.Course.Exams
+                        .Where(exam => exam.IsPublished)
+                        .SelectMany(exam => exam.StudentExams)
+                        .Count(se => se.StudentId == studentId && se.Status == "Submitted"),
+                    AvailableExamCount = e.Course.Exams
+                        .Count(exam => exam.IsPublished && 
+                                      (!exam.StartDate.HasValue || exam.StartDate <= DateTime.Now) &&
+                                      (!exam.EndDate.HasValue || exam.EndDate >= DateTime.Now) &&
+                                      !exam.StudentExams.Any(se => se.StudentId == studentId))
+                })
+                .ToListAsync();
+
+            return Ok(enrolledCourses);
         }
 
         [HttpGet("exams/available")]
         public async Task<IActionResult> GetAvailableExams()
         {
             var studentId = GetStudentId();
+            
+            Console.WriteLine($"🔍 Looking for available exams for student ID: {studentId}");
+
+            // Check if student has any enrollments
+            var enrollments = await _context.Enrollments
+                .Where(e => e.StudentId == studentId)
+                .Include(e => e.Course)
+                .ThenInclude(c => c.Exams)
+                .ToListAsync();
+            
+            Console.WriteLine($"📚 Found {enrollments.Count} enrollments for student {studentId}");
+            
+            foreach (var enrollment in enrollments)
+            {
+                Console.WriteLine($"📖 Course: {enrollment.Course.CourseName}, Exams: {enrollment.Course.Exams.Count}");
+                foreach (var exam in enrollment.Course.Exams)
+                {
+                    Console.WriteLine($"   📝 Exam: {exam.Title}, Published: {exam.IsPublished}, StartDate: {exam.StartDate}, EndDate: {exam.EndDate}");
+                }
+            }
 
             var availableExams = await _context.Enrollments
                 .Where(e => e.StudentId == studentId)
@@ -58,6 +170,13 @@ namespace ExamSystem.Controllers
                     IsTaken = exam.StudentExams.Any(se => se.StudentId == studentId)
                 })
                 .ToListAsync();
+
+            Console.WriteLine($"✅ Found {availableExams.Count} available exams for student {studentId}");
+            
+            foreach (var exam in availableExams)
+            {
+                Console.WriteLine($"   📋 Available Exam: {exam.Title}, Course: {exam.CourseName}, IsTaken: {exam.IsTaken}");
+            }
 
             return Ok(availableExams);
         }

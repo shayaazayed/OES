@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة الاختبارات - ExamPro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header style="background: white; padding: 1rem 0; border-radius: 16px; margin-bottom: 2rem; box-shadow: var(--shadow-lg);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <button class="btn btn-secondary" onclick="window.location.href='dashboard.html'">
+                        <i class="fas fa-arrow-right"></i>
+                        رجوع
+                    </button>
+                    <div>
+                        <h1 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-800); margin: 0;">إدارة الاختبارات</h1>
+                        <p style="color: var(--gray-600); margin: 0; font-size: 0.9rem;">إنشاء وإدارة الاختبارات التعليمية</p>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <button class="btn btn-primary" onclick="showCreateExamModal()">
+                        <i class="fas fa-plus"></i>
+                        إنشاء اختبار جديد
+                    </button>
+                    <button class="btn btn-secondary" onclick="performLogout()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        تسجيل الخروج
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Course Selection -->
+        <div class="card" style="margin-bottom: 2rem;">
+            <div style="padding: 1.5rem;">
+                <h3 style="margin-bottom: 1rem;">اختر الدورة</h3>
+                <select id="courseSelect" onchange="loadExams()" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                    <option value="">اختر دورة لعرض اختباراتها</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Exams Grid -->
+        <div id="examsContainer" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1.5rem;">
+            <!-- Exams will be loaded here -->
+        </div>
+    </div>
+
+    <!-- Create Exam Modal -->
+    <div id="createExamModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; overflow-y: auto;">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 2rem; border-radius: 16px; width: 90%; max-width: 800px; max-height: 90vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h3>إنشاء اختبار جديد</h3>
+                <button class="btn btn-secondary" onclick="hideCreateExamModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form id="createExamForm">
+                <!-- Exam Details Section -->
+                <div style="background: var(--gray-50); padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                    <h4 style="margin-bottom: 1rem; color: var(--primary);">
+                        <i class="fas fa-file-alt"></i>
+                        معلومات الاختبار
+                    </h4>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">عنوان الاختبار</label>
+                            <input type="text" id="examTitle" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">الدورة</label>
+                            <select id="examCourse" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                                <option value="">اختر الدورة</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">وصف الاختبار</label>
+                        <textarea id="examDescription" rows="3" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;"></textarea>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">المدة (بالدقائق)</label>
+                            <input type="number" id="examDuration" min="1" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">درجة النجاح</label>
+                            <input type="number" id="examPassingScore" min="1" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">تاريخ البدء (اختياري)</label>
+                            <input type="datetime-local" id="examStartDate" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Questions Section -->
+                <div style="background: var(--gray-50); padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h4 style="color: var(--primary);">
+                            <i class="fas fa-question-circle"></i>
+                            الأسئلة
+                        </h4>
+                        <button type="button" class="btn btn-primary" onclick="addQuestion()">
+                            <i class="fas fa-plus"></i>
+                            إضافة سؤال
+                        </button>
+                    </div>
+                    
+                    <div id="questionsContainer">
+                        <!-- Questions will be added here -->
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="hideCreateExamModal()">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">إنشاء الاختبار</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Question Template (hidden) -->
+    <div id="questionTemplate" style="display: none;">
+        <div class="question-item" style="background: white; padding: 1.5rem; border-radius: 8px; margin-bottom: 1rem; border: 1px solid var(--gray-200);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h5 style="margin: 0; color: var(--gray-800);">
+                    <span class="question-number">1</span>. السؤال
+                </h5>
+                <button type="button" class="btn btn-sm btn-danger" onclick="removeQuestion(this)">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+            
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">نص السؤال</label>
+                <textarea class="question-text" rows="2" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;"></textarea>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">الخيار أ</label>
+                    <input type="text" class="option-a" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">الخيار ب</label>
+                    <input type="text" class="option-b" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">الخيار ج</label>
+                    <input type="text" class="option-c" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">الخيار د</label>
+                    <input type="text" class="option-d" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">الإجابة الصحيحة</label>
+                    <select class="correct-answer" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                        <option value="">اختر الإجابة الصحيحة</option>
+                        <option value="A">أ</option>
+                        <option value="B">ب</option>
+                        <option value="C">ج</option>
+                        <option value="D">د</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">الدرجة</label>
+                    <input type="number" class="question-marks" min="1" value="1" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script>
+        let questionCount = 0;
+
+        // Check authentication
+        if (!checkAuth()) {
+            window.location.href = '../login.html';
+        }
+
+        // Check if user is admin or teacher
+        if (!api.isAdmin() && !api.isTeacher()) {
+            showAlert('غير مصرح لك بالوصول لهذه الصفحة', 'danger');
+            setTimeout(() => {
+                window.location.href = '../login.html';
+            }, 2000);
+        }
+
+        // Load courses
+        async function loadCourses() {
+            try {
+                console.log('📚 Loading courses...');
+                const courses = await api.getAllCourses();
+                console.log('✅ Courses loaded:', courses);
+                
+                const courseSelect = document.getElementById('courseSelect');
+                const examCourseSelect = document.getElementById('examCourse');
+                
+                if (courses.length === 0) {
+                    courseSelect.innerHTML = '<option value="">لا توجد دورات</option>';
+                    examCourseSelect.innerHTML = '<option value="">لا توجد دورات</option>';
+                } else {
+                    const options = '<option value="">اختر دورة</option>' + 
+                        courses.map(course => `<option value="${course.Id || course.id}">${course.CourseName || course.courseName}</option>`).join('');
+                    
+                    courseSelect.innerHTML = options;
+                    examCourseSelect.innerHTML = options;
+                }
+            } catch (error) {
+                console.error('❌ Failed to load courses:', error);
+                showAlert('فشل في تحميل الدورات: ' + error.message, 'danger');
+            }
+        }
+
+        // Load exams for selected course
+        async function loadExams() {
+            const courseId = document.getElementById('courseSelect').value;
+            if (!courseId) {
+                document.getElementById('examsContainer').innerHTML = '<div class="card"><div style="text-align: center; padding: 2rem;">يرجى اختيار دورة لعرض اختباراتها</div></div>';
+                return;
+            }
+
+            try {
+                console.log(`📝 Loading exams for course ${courseId}...`);
+                const response = await fetch(`${api.baseURL}/exam/course/${courseId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${api.token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const exams = await response.json();
+                    console.log('✅ Exams loaded:', exams);
+                    displayExams(exams);
+                } else {
+                    throw new Error('Failed to load exams');
+                }
+            } catch (error) {
+                console.error('❌ Failed to load exams:', error);
+                showAlert('فشل في تحميل الاختبارات: ' + error.message, 'danger');
+            }
+        }
+
+        // Display exams
+        function displayExams(exams) {
+            const container = document.getElementById('examsContainer');
+            
+            if (!exams || exams.length === 0) {
+                container.innerHTML = '<div class="card"><div style="text-align: center; padding: 2rem;">لا توجد اختبارات في هذه الدورة</div></div>';
+                return;
+            }
+            
+            container.innerHTML = exams.map(exam => `
+                <div class="card">
+                    <div style="padding: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                            <div style="width: 50px; height: 50px; background: var(--gradient-1); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-file-alt" style="color: white; font-size: 1.5rem;"></i>
+                            </div>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button class="btn btn-sm btn-info" onclick="viewExam(${exam.Id || exam.id})">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                ${!exam.IsPublished ? `<button class="btn btn-sm btn-success" onclick="publishExam(${exam.Id || exam.id})">
+                                    <i class="fas fa-check"></i>
+                                </button>` : ''}
+                                <button class="btn btn-sm btn-danger" onclick="deleteExam(${exam.Id || exam.id})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--gray-800); margin-bottom: 0.5rem;">${exam.Title || exam.title}</h3>
+                        <p style="color: var(--gray-600); margin-bottom: 1rem; line-height: 1.6;">${exam.Description || exam.description || 'لا يوجد وصف'}</p>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1rem;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fas fa-clock" style="color: var(--primary);"></i>
+                                <span style="color: var(--gray-700); font-size: 0.9rem;">المدة: ${exam.DurationMinutes || exam.durationMinutes} دقيقة</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fas fa-trophy" style="color: var(--warning);"></i>
+                                <span style="color: var(--gray-700); font-size: 0.9rem;">درجة النجاح: ${exam.PassingScore || exam.passingScore}</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fas fa-question-circle" style="color: var(--success);"></i>
+                                <span style="color: var(--gray-700); font-size: 0.9rem;">الأسئلة: ${exam.QuestionsCount || exam.questionsCount}</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fas fa-star" style="color: var(--info);"></i>
+                                <span style="color: var(--gray-700); font-size: 0.9rem;">الإجمالي: ${exam.TotalMarks || exam.totalMarks}</span>
+                            </div>
+                        </div>
+                        
+                        <div style="padding-top: 1rem; border-top: 1px solid var(--gray-100);">
+                            <span style="display: inline-block; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600; ${exam.IsPublished ? 'background: var(--success); color: white;' : 'background: var(--warning); color: white;'}">
+                                ${exam.IsPublished ? 'منشور' : 'مسودة'}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Modal functions
+        function showCreateExamModal() {
+            document.getElementById('createExamModal').style.display = 'block';
+            loadCourses();
+        }
+
+        function hideCreateExamModal() {
+            document.getElementById('createExamModal').style.display = 'none';
+            document.getElementById('createExamForm').reset();
+            document.getElementById('questionsContainer').innerHTML = '';
+            questionCount = 0;
+        }
+
+        // Add question
+        function addQuestion() {
+            questionCount++;
+            const template = document.getElementById('questionTemplate').cloneNode(true);
+            template.style.display = 'block';
+            template.id = '';
+            template.querySelector('.question-number').textContent = questionCount;
+            document.getElementById('questionsContainer').appendChild(template);
+        }
+
+        // Remove question
+        function removeQuestion(button) {
+            button.closest('.question-item').remove();
+            updateQuestionNumbers();
+        }
+
+        // Update question numbers
+        function updateQuestionNumbers() {
+            const questions = document.querySelectorAll('.question-item');
+            questions.forEach((question, index) => {
+                question.querySelector('.question-number').textContent = index + 1;
+            });
+            questionCount = questions.length;
+        }
+
+        // Create exam form handler
+        document.getElementById('createExamForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const questions = [];
+            document.querySelectorAll('.question-item').forEach((item, index) => {
+                questions.push({
+                    QuestionText: item.querySelector('.question-text').value,
+                    OptionA: item.querySelector('.option-a').value,
+                    OptionB: item.querySelector('.option-b').value,
+                    OptionC: item.querySelector('.option-c').value,
+                    OptionD: item.querySelector('.option-d').value,
+                    CorrectAnswer: item.querySelector('.correct-answer').value,
+                    Marks: parseInt(item.querySelector('.question-marks').value)
+                });
+            });
+
+            if (questions.length === 0) {
+                showAlert('يرجى إضافة سؤال واحد على الأقل', 'warning');
+                return;
+            }
+
+            const examData = {
+                Title: document.getElementById('examTitle').value,
+                Description: document.getElementById('examDescription').value,
+                CourseId: parseInt(document.getElementById('examCourse').value),
+                DurationMinutes: parseInt(document.getElementById('examDuration').value),
+                PassingScore: parseInt(document.getElementById('examPassingScore').value),
+                StartDate: document.getElementById('examStartDate').value || null,
+                Questions: questions
+            };
+
+            console.log('📝 Creating exam with data:', examData);
+
+            try {
+                const response = await fetch(`${api.baseURL}/exam`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${api.token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(examData)
+                });
+
+                if (response.ok) {
+                    showAlert('تم إنشاء الاختبار بنجاح', 'success');
+                    hideCreateExamModal();
+                    loadExams(); // Reload exams
+                } else {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Failed to create exam');
+                }
+            } catch (error) {
+                console.error('❌ Failed to create exam:', error);
+                showAlert('فشل في إنشاء الاختبار: ' + error.message, 'danger');
+            }
+        });
+
+        // View exam details
+        async function viewExam(examId) {
+            try {
+                const response = await fetch(`${api.baseURL}/exam/${examId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${api.token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const exam = await response.json();
+                    console.log('📝 Exam details:', exam);
+                    
+                    // You can show exam details in a modal or navigate to a details page
+                    alert(`تفاصيل الاختبار:\nالعنوان: ${exam.Title}\nالوصف: ${exam.Description}\nعدد الأسئلة: ${exam.Questions?.length || 0}`);
+                } else {
+                    throw new Error('Failed to load exam details');
+                }
+            } catch (error) {
+                console.error('❌ Failed to view exam:', error);
+                showAlert('فشل في عرض تفاصيل الاختبار: ' + error.message, 'danger');
+            }
+        }
+
+        // Publish exam
+        async function publishExam(examId) {
+            if (confirm('هل أنت متأكد من نشر هذا الاختبار؟ بعد النشر، لن تتمكن من تعديله.')) {
+                try {
+                    const response = await fetch(`${api.baseURL}/exam/${examId}/publish`, {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `Bearer ${api.token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (response.ok) {
+                        showAlert('تم نشر الاختبار بنجاح', 'success');
+                        loadExams(); // Reload exams
+                    } else {
+                        const error = await response.json();
+                        throw new Error(error.message || 'Failed to publish exam');
+                    }
+                } catch (error) {
+                    console.error('❌ Failed to publish exam:', error);
+                    showAlert('فشل في نشر الاختبار: ' + error.message, 'danger');
+                }
+            }
+        }
+
+        // Delete exam
+        async function deleteExam(examId) {
+            if (confirm('هل أنت متأكد من حذف هذا الاختبار؟')) {
+                try {
+                    const response = await fetch(`${api.baseURL}/exam/${examId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${api.token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (response.ok) {
+                        showAlert('تم حذف الاختبار بنجاح', 'success');
+                        loadExams(); // Reload exams
+                    } else {
+                        const error = await response.json();
+                        throw new Error(error.message || 'Failed to delete exam');
+                    }
+                } catch (error) {
+                    console.error('❌ Failed to delete exam:', error);
+                    showAlert('فشل في حذف الاختبار: ' + error.message, 'danger');
+                }
+            }
+        }
+
+        // Logout function
+        function performLogout() {
+            if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
+                api.logout();
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('📝 Exams page loaded');
+            loadCourses();
+        });
+    </script>
+</body>
+</html>

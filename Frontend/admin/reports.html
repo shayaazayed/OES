@@ -23,10 +23,10 @@
                         <p style="color: var(--gray-600); margin: 0; font-size: 0.9rem;">عرض وتصدير تقارير النظام</p>
                     </div>
                 </div>
-                <div style="display: flex; align-items: center; gap: 1rem;">
+                <div style="display: flex; gap: 1rem; justify-content: flex-end;">
                     <button class="btn btn-success" onclick="exportReport()">
-                        <i class="fas fa-download"></i>
-                        تصدير تقرير
+                        <i class="fas fa-file-pdf"></i>
+                        تصدير التقرير
                     </button>
                     <button class="btn btn-secondary" onclick="performLogout()">
                         <i class="fas fa-sign-out-alt"></i>
@@ -76,7 +76,50 @@
     </div>
 
     <script src="../js/api.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
+        // Check if libraries are loaded
+        function checkLibraries() {
+            const jspdfLoaded = typeof window.jspdf !== 'undefined' || typeof window.jsPDF !== 'undefined';
+            const html2canvasLoaded = typeof html2canvas !== 'undefined';
+            
+            console.log('📚 Libraries check:', {
+                jsPDF: jspdfLoaded,
+                html2canvas: html2canvasLoaded
+            });
+            
+            return jspdfLoaded && html2canvasLoaded;
+        }
+
+        // Wait for libraries to load
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                if (!checkLibraries()) {
+                    console.warn('⚠️ Libraries not loaded, trying alternative...');
+                    // Load alternative libraries
+                    loadAlternativeLibraries();
+                }
+            }, 2000);
+        });
+
+        // Load alternative libraries if main ones fail
+        function loadAlternativeLibraries() {
+            const script1 = document.createElement('script');
+            script1.src = 'https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js';
+            script1.onload = function() {
+                console.log('✅ Alternative jsPDF loaded');
+            };
+            document.head.appendChild(script1);
+
+            const script2 = document.createElement('script');
+            script2.src = 'https://unpkg.com/html2canvas@latest/dist/html2canvas.min.js';
+            script2.onload = function() {
+                console.log('✅ Alternative html2canvas loaded');
+            };
+            document.head.appendChild(script2);
+        }
+
         // Check authentication
         if (!checkAuth()) {
             window.location.href = '../login.html';
@@ -135,6 +178,10 @@
                     case 'exams':
                         reportData = await api.getAllExams();
                         reportHtml = generateExamsReport(reportData);
+                        break;
+                    case 'results':
+                        reportData = await api.getExamResults();
+                        reportHtml = generateResultsReport(reportData);
                         break;
                     default:
                         reportHtml = '<div class="card"><p>نوع التقرير غير متاح حالياً</p></div>';
@@ -298,9 +345,10 @@
                         <table style="width: 100%; border-collapse: collapse;">
                             <thead>
                                 <tr style="background: var(--gray-50);">
-                                    <th style="padding: 1rem; text-align: right; border-bottom: 1px solid var(--gray-200);">المعرف</th>
                                     <th style="padding: 1rem; text-align: right; border-bottom: 1px solid var(--gray-200);">عنوان الاختبار</th>
                                     <th style="padding: 1rem; text-align: right; border-bottom: 1px solid var(--gray-200);">الدورة</th>
+                                    <th style="padding: 1rem; text-align: right; border-bottom: 1px solid var(--gray-200);">المعلم</th>
+                                    <th style="padding: 1rem; text-align: right; border-bottom: 1px solid var(--gray-200);">عدد الطلاب</th>
                                     <th style="padding: 1rem; text-align: right; border-bottom: 1px solid var(--gray-200);">الدرجة</th>
                                     <th style="padding: 1rem; text-align: right; border-bottom: 1px solid var(--gray-200);">المدة</th>
                                 </tr>
@@ -308,9 +356,10 @@
                             <tbody>
                                 ${exams.map(exam => `
                                     <tr>
-                                        <td style="padding: 1rem; border-bottom: 1px solid var(--gray-100);">${exam.Id || exam.id || 'N/A'}</td>
                                         <td style="padding: 1rem; border-bottom: 1px solid var(--gray-100);">${exam.Title || exam.title || 'N/A'}</td>
-                                        <td style="padding: 1rem; border-bottom: 1px solid var(--gray-100);">${exam.CourseName || (exam.Course ? exam.Course.CourseName : 'N/A') || 'N/A'}</td>
+                                        <td style="padding: 1rem; border-bottom: 1px solid var(--gray-100);">${exam.courseName || exam.CourseName || (exam.Course ? exam.Course.CourseName : 'N/A') || 'N/A'}</td>
+                                        <td style="padding: 1rem; border-bottom: 1px solid var(--gray-100);">${exam.teacherName || exam.TeacherName || (exam.Course && exam.Course.Teacher ? exam.Course.Teacher.FullName : 'N/A') || 'N/A'}</td>
+                                        <td style="padding: 1rem; border-bottom: 1px solid var(--gray-100);">${exam.StudentCount || exam.studentCount || 0}</td>
                                         <td style="padding: 1rem; border-bottom: 1px solid var(--gray-100);">${exam.TotalMarks || exam.totalMarks || 100} درجة</td>
                                         <td style="padding: 1rem; border-bottom: 1px solid var(--gray-100);">${exam.DurationMinutes || exam.durationMinutes || 60} دقيقة</td>
                                     </tr>
@@ -322,26 +371,158 @@
             `;
         }
 
+        // Generate results report
+        function generateResultsReport(results) {
+            return `
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">تقرير النتائج</h2>
+                        <span style="color: var(--gray-600); font-size: 0.9rem;">${formatDate(new Date())}</span>
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--gray-800); margin-bottom: 1rem;">إجمالي النتائج: ${results.length}</h3>
+                        
+                        <!-- Statistics Summary -->
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                            <div style="text-align: center; padding: 1rem; background: var(--success); color: white; border-radius: 12px;">
+                                <h3 style="font-size: 1.5rem; font-weight: 800; margin: 0;">${results.filter(r => r.IsPassed || r.isPassed).length}</h3>
+                                <p style="margin: 0;">ناجح</p>
+                            </div>
+                            <div style="text-align: center; padding: 1rem; background: var(--danger); color: white; border-radius: 12px;">
+                                <h3 style="font-size: 1.5rem; font-weight: 800; margin: 0;">${results.filter(r => !(r.IsPassed || r.isPassed)).length}</h3>
+                                <p style="margin: 0;">راسب</p>
+                            </div>
+                            <div style="text-align: center; padding: 1rem; background: var(--warning); color: white; border-radius: 12px;">
+                                <h3 style="font-size: 1.5rem; font-weight: 800; margin: 0;">${results.length > 0 ? Math.round(results.reduce((acc, r) => acc + (r.Score || r.score || 0), 0) / results.length) : 0}</h3>
+                                <p style="margin: 0;">متوسط الدرجات</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="background: var(--gray-50);">
+                                    <th style="padding: 1rem; text-align: right; border-bottom: 1px solid var(--gray-200);">اسم الطالب</th>
+                                    <th style="padding: 1rem; text-align: right; border-bottom: 1px solid var(--gray-200);">الاختبار</th>
+                                    <th style="padding: 1rem; text-align: right; border-bottom: 1px solid var(--gray-200);">الدورة</th>
+                                    <th style="padding: 1rem; text-align: right; border-bottom: 1px solid var(--gray-200);">الدرجة</th>
+                                    <th style="padding: 1rem; text-align: right; border-bottom: 1px solid var(--gray-200);">الإجمالي</th>
+                                    <th style="padding: 1rem; text-align: right; border-bottom: 1px solid var(--gray-200);">النتيجة</th>
+                                    <th style="padding: 1rem; text-align: right; border-bottom: 1px solid var(--gray-200);">التاريخ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${results.map(result => {
+                                    const score = result.Score || result.score || 0;
+                                    const totalMarks = result.TotalMarks || result.totalMarks || 0;
+                                    const percentage = totalMarks > 0 ? Math.round((score / totalMarks) * 100) : 0;
+                                    const isPassed = result.IsPassed || result.isPassed || false;
+                                    
+                                    return `
+                                        <tr>
+                                            <td style="padding: 1rem; border-bottom: 1px solid var(--gray-100);">${result.StudentName || result.studentName || 'N/A'}</td>
+                                            <td style="padding: 1rem; border-bottom: 1px solid var(--gray-100);">${result.ExamTitle || result.examTitle || 'N/A'}</td>
+                                            <td style="padding: 1rem; border-bottom: 1px solid var(--gray-100);">${result.CourseName || result.courseName || 'N/A'}</td>
+                                            <td style="padding: 1rem; border-bottom: 1px solid var(--gray-100);">${score}/${totalMarks}</td>
+                                            <td style="padding: 1rem; border-bottom: 1px solid var(--gray-100);">${percentage}%</td>
+                                            <td style="padding: 1rem; border-bottom: 1px solid var(--gray-100);">
+                                                <span style="padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.875rem; font-weight: 600; 
+                                                    background: ${isPassed ? 'var(--success)' : 'var(--danger)'}; color: white;">
+                                                    ${isPassed ? 'ناجح' : 'راسب'}
+                                                </span>
+                                            </td>
+                                            <td style="padding: 1rem; border-bottom: 1px solid var(--gray-100);">${result.CompletedDate ? formatDate(result.CompletedDate) : (result.completedDate ? formatDate(result.completedDate) : 'N/A')}</td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
         // Export report
         function exportReport() {
-            const reportContent = document.getElementById('reportContent').innerHTML;
-            if (!reportContent.trim()) {
+            const reportContent = document.getElementById('reportContent');
+            if (!reportContent || !reportContent.innerHTML.trim()) {
                 showAlert('يرجى إنشاء تقرير أولاً', 'warning');
                 return;
             }
 
-            // Simple export - in real implementation, you'd use a library like jsPDF or excelJS
-            const blob = new Blob([reportContent], { type: 'text/html' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `تقرير_${formatDate(new Date()).replace(/[/:]/g, '-')}.html`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
+            // Check if libraries are loaded
+            if (!checkLibraries()) {
+                showAlert('مكتبات PDF لم يتم تحميلها. جاري التحميل...', 'info');
+                loadAlternativeLibraries();
+                
+                // Wait for libraries to load and try again
+                setTimeout(function() {
+                    if (checkLibraries()) {
+                        createPDF();
+                    } else {
+                        showAlert('فشل تحميل مكتبات PDF. لا يمكن تصدير التقرير', 'danger');
+                    }
+                }, 3000);
+                return;
+            }
+
+            createPDF();
+        }
+
+        function createPDF() {
+            const reportContent = document.getElementById('reportContent');
             
-            showAlert('تم تصدير التقرير بنجاح', 'success');
+            // Show loading message
+            showAlert('جاري إنشاء ملف PDF...', 'info');
+
+            // Create PDF from HTML content
+            html2canvas(reportContent, {
+                scale: 2,
+                useCORS: true,
+                allowTaint: true,
+                backgroundColor: '#ffffff',
+                logging: false
+            }).then(canvas => {
+                try {
+                    // Get jsPDF from window object
+                    const jsPDFClass = window.jspdf?.jsPDF || window.jsPDF;
+                    if (!jsPDFClass) {
+                        throw new Error('jsPDF not available');
+                    }
+
+                    const imgData = canvas.toDataURL('image/png');
+                    const pdf = new jsPDFClass({
+                        orientation: 'p',
+                        unit: 'mm',
+                        format: 'a4'
+                    });
+
+                    const imgWidth = 210;
+                    const pageHeight = 295;
+                    const imgHeight = canvas.height * imgWidth / canvas.width;
+                    let heightLeft = imgHeight;
+
+                    do {
+                        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+                        heightLeft -= pageHeight;
+                        if (heightLeft > 0) {
+                            pdf.addPage();
+                        }
+                    } while (heightLeft > 0);
+
+                    // Save the PDF
+                    const fileName = 'تقرير_' + new Date().toLocaleDateString('ar-SA').replace(/[/:]/g, '-') + '.pdf';
+                    pdf.save(fileName);
+                    
+                    showAlert('تم تصدير التقرير كملف PDF بنجاح', 'success');
+                } catch (error) {
+                    console.error('❌ Error creating PDF:', error);
+                    showAlert('فشل في إنشاء ملف PDF: ' + error.message, 'danger');
+                }
+            }).catch(error => {
+                console.error('❌ Error creating PDF:', error);
+                showAlert('فشل في إنشاء ملف PDF: ' + error.message, 'danger');
+            });
         }
 
         // Logout function

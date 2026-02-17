@@ -248,11 +248,13 @@
                 const username = user.Username || user.username;
                 const email = user.Email || user.email;
                 const userType = user.UserType || user.userType;
+                const isActive = user.IsActive !== undefined ? user.IsActive : (user.isActive !== undefined ? user.isActive : true);
                 
                 console.log('🆔 Mapped User ID:', userId);
                 console.log('👤 Mapped Username:', username);
                 console.log('📧 Mapped Email:', email);
                 console.log('🎭 Mapped UserType:', userType);
+                console.log('✅ Mapped IsActive:', isActive);
                 
                 return `
                 <tr>
@@ -267,8 +269,8 @@
                     </td>
                     <td style="padding: 1rem; border-bottom: 1px solid var(--gray-100);">
                         <span style="padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.875rem; font-weight: 600; 
-                            background: var(--success); color: white;">
-                            نشط
+                            background: ${isActive ? 'var(--success)' : 'var(--danger)'}; color: white;">
+                            ${isActive ? 'نشط' : 'غير نشط'}
                         </span>
                     </td>
                     <td style="padding: 1rem; border-bottom: 1px solid var(--gray-100);">

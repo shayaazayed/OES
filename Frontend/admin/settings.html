@@ -19,15 +19,11 @@
                         رجوع
                     </button>
                     <div>
-                        <h1 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-800); margin: 0;">الإعدادات</h1>
-                        <p style="color: var(--gray-600); margin: 0; font-size: 0.9rem;">إعدادات النظام والتفضيلات</p>
+                        <h1 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-800); margin: 0;">إعدادات النظام</h1>
+                        <p style="color: var(--gray-600); margin: 0; font-size: 0.9rem;">إدارة إعدادات النظام والتطبيق</p>
                     </div>
                 </div>
                 <div style="display: flex; align-items: center; gap: 1rem;">
-                    <button class="btn btn-primary" onclick="saveSettings()">
-                        <i class="fas fa-save"></i>
-                        حفظ الإعدادات
-                    </button>
                     <button class="btn btn-secondary" onclick="performLogout()">
                         <i class="fas fa-sign-out-alt"></i>
                         تسجيل الخروج
@@ -36,56 +32,108 @@
             </div>
         </header>
 
-        <!-- Settings Sections -->
-        <div style="display: grid; grid-template-columns: 1fr; gap: 2rem;">
-            <!-- System Settings -->
+        <!-- Settings Navigation -->
+        <div style="display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap;">
+            <button class="btn btn-primary" onclick="showSection('general')">
+                <i class="fas fa-cog"></i>
+                الإعدادات العامة
+            </button>
+            <button class="btn btn-secondary" onclick="showSection('security')">
+                <i class="fas fa-shield-alt"></i>
+                الأمان
+            </button>
+            <button class="btn btn-secondary" onclick="showSection('auth')">
+                <i class="fas fa-user-lock"></i>
+                المصادقة
+            </button>
+            <button class="btn btn-secondary" onclick="showSection('system')">
+                <i class="fas fa-server"></i>
+                النظام
+            </button>
+        </div>
+
+        <!-- General Settings -->
+        <div id="generalSection" class="settings-section">
             <div class="card">
                 <div class="card-header">
                     <h2 class="card-title">
-                        <i class="fas fa-cog"></i>
-                        إعدادات النظام
+                        <i class="fas fa-globe"></i>
+                        الإعدادات العامة
                     </h2>
                 </div>
                 <div style="padding: 1.5rem;">
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                        <!-- Site Name -->
                         <div>
-                            <h3 style="font-size: 1.1rem; font-weight: 600; color: var(--gray-800); margin-bottom: 1rem;">معلومات النظام</h3>
-                            <div style="display: flex; flex-direction: gap: 1rem;">
-                                <div style="flex: 1;">
-                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--gray-700);">اسم النظام</label>
-                                    <input type="text" id="systemName" value="ExamPro" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
-                                </div>
-                                <div style="flex: 1;">
-                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--gray-700);">الإصدار</label>
-                                    <input type="text" value="1.0.0" disabled style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px; background: var(--gray-50);">
-                                </div>
-                            </div>
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--gray-700);">
+                                اسم الموقع
+                            </label>
+                            <input type="text" id="siteName" value="ExamPro" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                            <small style="color: var(--gray-600);">اسم النظام الذي سيظهر في جميع الصفحات</small>
                         </div>
+
+                        <!-- Language -->
                         <div>
-                            <h3 style="font-size: 1.1rem; font-weight: 600; color: var(--gray-800); margin-bottom: 1rem;">اللغة والمنطقة</h3>
-                            <div style="display: flex; flex-direction: gap: 1rem;">
-                                <div style="flex: 1;">
-                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--gray-700);">اللغة الافتراضية</label>
-                                    <select id="defaultLanguage" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
-                                        <option value="ar" selected>العربية</option>
-                                        <option value="en">English</option>
-                                    </select>
-                                </div>
-                                <div style="flex: 1;">
-                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--gray-700);">المنطقة الزمنية</label>
-                                    <select id="timezone" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
-                                        <option value="Asia/Riyadh" selected>الرياض</option>
-                                        <option value="Asia/Dubai">دبي</option>
-                                        <option value="Asia/Cairo">القاهرة</option>
-                                    </select>
-                                </div>
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--gray-700);">
+                                اللغة الافتراضية
+                            </label>
+                            <select id="defaultLanguage" onchange="changeLanguage(this.value)" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                                <option value="ar" selected>العربية</option>
+                                <option value="en">English</option>
+                            </select>
+                            <small style="color: var(--gray-600);">اللغة الافتراضية للمستخدمين الجدد</small>
+                        </div>
+
+                        <!-- Email -->
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--gray-700);">
+                                البريد الإلكتروني للنظام
+                            </label>
+                            <input type="email" id="systemEmail" value="admin@exampro.com" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                            <small style="color: var(--gray-600);">البريد المستخدم للإشعارات والاتصال</small>
+                        </div>
+
+                        <!-- Phone -->
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--gray-700);">
+                                رقم هاتف النظام
+                            </label>
+                            <input type="tel" id="systemPhone" value="+966500000000" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                            <small style="color: var(--gray-600);">رقم الهاتف للدعم الفني</small>
+                        </div>
+
+                        <!-- Timezone -->
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--gray-700);">
+                                المنطقة الزمنية
+                            </label>
+                            <select id="timezone" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                                <option value="Asia/Riyadh" selected>الرياض (GMT+3)</option>
+                                <option value="Asia/Dubai">دبي (GMT+4)</option>
+                                <option value="Asia/Cairo">القاهرة (GMT+2)</option>
+                                <option value="UTC">UTC (GMT+0)</option>
+                            </select>
+                            <small style="color: var(--gray-600);">المنطقة الزمنية الافتراضية للنظام</small>
+                        </div>
+
+                        <!-- Maintenance Mode -->
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--gray-700);">
+                                وضع الصيانة
+                            </label>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <input type="checkbox" id="maintenanceMode" style="width: 20px; height: 20px;">
+                                <label for="maintenanceMode">تفعيل وضع الصيانة</label>
                             </div>
+                            <small style="color: var(--gray-600);">إذا تم تفعيله، لن يتمكن المستخدمون من الوصول للنظام</small>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Security Settings -->
+        <!-- Security Settings -->
+        <div id="securitySection" class="settings-section" style="display: none;">
             <div class="card">
                 <div class="card-header">
                     <h2 class="card-title">
@@ -95,154 +143,289 @@
                 </div>
                 <div style="padding: 1.5rem;">
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                        <!-- Password Policy -->
                         <div>
-                            <h3 style="font-size: 1.1rem; font-weight: 600; color: var(--gray-800); margin-bottom: 1rem;">سياسة كلمات المرور</h3>
-                            <div style="display: flex; flex-direction: column; gap: 1rem;">
-                                <div style="display: flex; align-items: center; justify-content: space-between; padding: 1rem; background: var(--gray-50); border-radius: 8px;">
-                                    <div>
-                                        <label style="font-weight: 600; color: var(--gray-700);">الحد الأدنى لطول كلمة المرور</label>
-                                        <p style="color: var(--gray-600); font-size: 0.9rem; margin: 0;">عدد الأحرف الأدنى المطلوب</p>
-                                    </div>
-                                    <input type="number" id="minPasswordLength" value="8" min="6" max="20" style="width: 80px; padding: 0.5rem; border: 1px solid var(--gray-300); border-radius: 8px;">
-                                </div>
-                                <div style="display: flex; align-items: center; justify-content: space-between; padding: 1rem; background: var(--gray-50); border-radius: 8px;">
-                                    <div>
-                                        <label style="font-weight: 600; color: var(--gray-700);">انتهاء صلاحية الجلسة</label>
-                                        <p style="color: var(--gray-600); font-size: 0.9rem; margin: 0;">بالدقائق</p>
-                                    </div>
-                                    <input type="number" id="sessionTimeout" value="120" min="30" max="480" style="width: 80px; padding: 0.5rem; border: 1px solid var(--gray-300); border-radius: 8px;">
-                                </div>
+                            <h3 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; color: var(--gray-800);">
+                                سياسة كلمات المرور
+                            </h3>
+                            
+                            <div style="margin-bottom: 1rem;">
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--gray-700);">
+                                    الحد الأدنى لطول كلمة المرور
+                                </label>
+                                <input type="number" id="minPasswordLength" value="8" min="6" max="20" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                                <small style="color: var(--gray-600);">عدد الأحرف الأدنى المطلوب</small>
                             </div>
-                        </div>
-                        <div>
-                            <h3 style="font-size: 1.1rem; font-weight: 600; color: var(--gray-800); margin-bottom: 1rem;">إعدادات تسجيل الدخول</h3>
-                            <div style="display: flex; flex-direction: column; gap: 1rem;">
-                                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                                    <input type="checkbox" id="requireEmailVerification" checked style="width: 20px; height: 20px;">
-                                    <span style="font-weight: 600; color: var(--gray-700);">تطلب التحقق من البريد الإلكتروني</span>
-                                </label>
-                                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                                    <input type="checkbox" id="enableTwoFactor" style="width: 20px; height: 20px;">
-                                    <span style="font-weight: 600; color: var(--gray-700);">تفعيل المصادقة الثنائية</span>
-                                </label>
-                                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                                    <input type="checkbox" id="enableCaptcha" checked style="width: 20px; height: 20px;">
-                                    <span style="font-weight: 600; color: var(--gray-700);">تفعيل CAPTCHA</span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Email Settings -->
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">
-                        <i class="fas fa-envelope"></i>
-                        إعدادات البريد الإلكتروني
-                    </h2>
-                </div>
-                <div style="padding: 1.5rem;">
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
-                        <div>
-                            <h3 style="font-size: 1.1rem; font-weight: 600; color: var(--gray-800); margin-bottom: 1rem;">خادم البريد</h3>
-                            <div style="display: flex; flex-direction: column; gap: 1rem;">
-                                <div>
-                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--gray-700);">مضيف SMTP</label>
-                                    <input type="text" id="smtpHost" placeholder="smtp.gmail.com" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
-                                </div>
-                                <div style="display: flex; gap: 1rem;">
-                                    <div style="flex: 1;">
-                                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--gray-700);">المنفذ</label>
-                                        <input type="number" id="smtpPort" value="587" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
-                                    </div>
-                                    <div style="flex: 1;">
-                                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--gray-700);">التشفير</label>
-                                        <select id="smtpEncryption" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
-                                            <option value="tls">TLS</option>
-                                            <option value="ssl">SSL</option>
-                                            <option value="none">بدون تشفير</option>
-                                        </select>
-                                    </div>
-                                </div>
+                            <div style="margin-bottom: 1rem;">
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--gray-700);">
+                                    انتهاء صلاحية كلمة المرور (بالأيام)
+                                </label>
+                                <input type="number" id="passwordExpiryDays" value="90" min="30" max="365" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                                <small style="color: var(--gray-600);">بعد هذه المدة يجب على المستخدم تغيير كلمة المرور</small>
                             </div>
-                        </div>
-                        <div>
-                            <h3 style="font-size: 1.1rem; font-weight: 600; color: var(--gray-800); margin-bottom: 1rem;">مصادقة البريد</h3>
-                            <div style="display: flex; flex-direction: column; gap: 1rem;">
-                                <div>
-                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--gray-700);">البريد الإلكتروني</label>
-                                    <input type="email" id="emailFrom" placeholder="noreply@exampro.com" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
-                                </div>
-                                <div>
-                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--gray-700);">كلمة المرور</label>
-                                    <input type="password" id="emailPassword" placeholder="كلمة مرور التطبيق" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--gray-200);">
-                        <button class="btn btn-secondary" onclick="testEmailSettings()">
-                            <i class="fas fa-paper-plane"></i>
-                            اختبار إعدادات البريد
-                        </button>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Backup Settings -->
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">
-                        <i class="fas fa-database"></i>
-                        النسخ الاحتياطي
-                    </h2>
-                </div>
-                <div style="padding: 1.5rem;">
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
-                        <div>
-                            <h3 style="font-size: 1.1rem; font-weight: 600; color: var(--gray-800); margin-bottom: 1rem;">جدولة النسخ الاحتياطي</h3>
-                            <div style="display: flex; flex-direction: column; gap: 1rem;">
-                                <div>
-                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--gray-700);">تكرار النسخ الاحتياطي</label>
-                                    <select id="backupFrequency" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
-                                        <option value="daily">يومياً</option>
-                                        <option value="weekly">أسبوعياً</option>
-                                        <option value="monthly">شهرياً</option>
-                                        <option value="manual">يدوي فقط</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--gray-700);">الاحتفاظ بالنسخ (بالأيام)</label>
-                                    <input type="number" id="backupRetention" value="30" min="7" max="365" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
-                                </div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                                <input type="checkbox" id="requireUppercase" checked style="width: 20px; height: 20px;">
+                                <label for="requireUppercase">يتطلب أحرف كبيرة</label>
+                            </div>
+
+                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                                <input type="checkbox" id="requireLowercase" checked style="width: 20px; height: 20px;">
+                                <label for="requireLowercase">يتطلب أحرف صغيرة</label>
+                            </div>
+
+                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                                <input type="checkbox" id="requireNumbers" checked style="width: 20px; height: 20px;">
+                                <label for="requireNumbers">يتطلب أرقام</label>
+                            </div>
+
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <input type="checkbox" id="requireSpecialChars" style="width: 20px; height: 20px;">
+                                <label for="requireSpecialChars">يتطلب أحرف خاصة</label>
                             </div>
                         </div>
+
+                        <!-- Session Settings -->
                         <div>
-                            <h3 style="font-size: 1.1rem; font-weight: 600; color: var(--gray-800); margin-bottom: 1rem;">الإجراءات</h3>
-                            <div style="display: flex; flex-direction: column; gap: 1rem;">
-                                <button class="btn btn-primary" onclick="createBackup()">
-                                    <i class="fas fa-download"></i>
-                                    إنشاء نسخة احتياطية الآن
-                                </button>
-                                <button class="btn btn-secondary" onclick="restoreBackup()">
-                                    <i class="fas fa-upload"></i>
-                                    استعادة نسخة احتياطية
-                                </button>
-                                <button class="btn btn-warning" onclick="viewBackups()">
-                                    <i class="fas fa-list"></i>
-                                    عرض النسخ الاحتياطية
-                                </button>
+                            <h3 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; color: var(--gray-800);">
+                                إعدادات الجلسة
+                            </h3>
+                            
+                            <div style="margin-bottom: 1rem;">
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--gray-700);">
+                                    انتهاء صلاحية الجلسة (بالدقائق)
+                                </label>
+                                <input type="number" id="sessionTimeout" value="120" min="15" max="1440" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                                <small style="color: var(--gray-600);">بعد هذه المدة يتم تسجيل الخروج تلقائياً</small>
+                            </div>
+
+                            <div style="margin-bottom: 1rem;">
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--gray-700);">
+                                    الحد الأقصى للمحاولات الفاشلة
+                                </label>
+                                <input type="number" id="maxLoginAttempts" value="5" min="3" max="10" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                                <small style="color: var(--gray-600);">بعد هذه المحاولات يتم قفل الحساب</small>
+                            </div>
+
+                            <div style="margin-bottom: 1rem;">
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--gray-700);">
+                                    مدة قفل الحساب (بالدقائق)
+                                </label>
+                                <input type="number" id="lockoutDuration" value="30" min="5" max="60" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                                <small style="color: var(--gray-600);">مدة قفل الحساب بعد المحاولات الفاشلة</small>
+                            </div>
+
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <input type="checkbox" id="rememberMeEnabled" checked style="width: 20px; height: 20px;">
+                                <label for="rememberMeEnabled">تفعيل "تذكرني"</label>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+
+        <!-- Authentication Settings -->
+        <div id="authSection" class="settings-section" style="display: none;">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-user-lock"></i>
+                        إعدادات تسجيل الدخول
+                    </h2>
+                </div>
+                <div style="padding: 1.5rem;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                        <!-- Email Verification -->
+                        <div>
+                            <h3 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; color: var(--gray-800);">
+                                التحقق من البريد الإلكتروني
+                            </h3>
+                            
+                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                                <input type="checkbox" id="requireEmailVerification" style="width: 20px; height: 20px;">
+                                <label for="requireEmailVerification">تطلب التحقق من البريد الإلكتروني</label>
+                            </div>
+                            
+                            <small style="color: var(--gray-600);">المستخدمون الجدد يجب أن يتحققوا من بريدهم الإلكتروني</small>
+                        </div>
+
+                        <!-- Two Factor Authentication -->
+                        <div>
+                            <h3 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; color: var(--gray-800);">
+                                المصادقة الثنائية
+                            </h3>
+                            
+                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                                <input type="checkbox" id="enableTwoFactorAuth" style="width: 20px; height: 20px;">
+                                <label for="enableTwoFactorAuth">تفعيل المصادقة الثنائية</label>
+                            </div>
+                            
+                            <small style="color: var(--gray-600);">إضافة طبقة أمان إضافية باستخدام تطبيق المصادقة</small>
+                        </div>
+
+                        <!-- CAPTCHA -->
+                        <div>
+                            <h3 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; color: var(--gray-800);">
+                                الحماية من الروبوتات
+                            </h3>
+                            
+                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                                <input type="checkbox" id="enableCaptcha" style="width: 20px; height: 20px;">
+                                <label for="enableCaptcha">تفعيل CAPTCHA</label>
+                            </div>
+                            
+                            <div style="margin-bottom: 1rem;">
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--gray-700);">
+                                    نوع CAPTCHA
+                                </label>
+                                <select id="captchaType" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                                    <option value="recaptcha">reCAPTCHA</option>
+                                    <option value="hcaptcha">hCaptcha</option>
+                                    <option value="simple">بسيط (رياضيات)</option>
+                                </select>
+                            </div>
+                            
+                            <small style="color: var(--gray-600);">حماية تسجيل الدخول من الهجمات الآلية</small>
+                        </div>
+
+                        <!-- Social Login -->
+                        <div>
+                            <h3 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; color: var(--gray-800);">
+                                تسجيل الدخول الاجتماعي
+                            </h3>
+                            
+                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                                <input type="checkbox" id="enableGoogleLogin" style="width: 20px; height: 20px;">
+                                <label for="enableGoogleLogin">تفعيل تسجيل الدخول بحساب Google</label>
+                            </div>
+                            
+                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                                <input type="checkbox" id="enableMicrosoftLogin" style="width: 20px; height: 20px;">
+                                <label for="enableMicrosoftLogin">تفعيل تسجيل الدخول بحساب Microsoft</label>
+                            </div>
+                            
+                            <small style="color: var(--gray-600);">السماح للمستخدمين بتسجيل الدخول بحساباتهم الاجتماعية</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Settings -->
+        <div id="systemSection" class="settings-section" style="display: none;">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-server"></i>
+                        إعدادات النظام
+                    </h2>
+                </div>
+                <div style="padding: 1.5rem;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                        <!-- Backup Settings -->
+                        <div>
+                            <h3 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; color: var(--gray-800);">
+                                النسخ الاحتياطي
+                            </h3>
+                            
+                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                                <input type="checkbox" id="autoBackup" checked style="width: 20px; height: 20px;">
+                                <label for="autoBackup">تفعيل النسخ الاحتياطي التلقائي</label>
+                            </div>
+                            
+                            <div style="margin-bottom: 1rem;">
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--gray-700);">
+                                    تكرار النسخ الاحتياطي
+                                </label>
+                                <select id="backupFrequency" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                                    <option value="daily">يومياً</option>
+                                    <option value="weekly">أسبوعياً</option>
+                                    <option value="monthly">شهرياً</option>
+                                </select>
+                            </div>
+                            
+                            <div style="margin-bottom: 1rem;">
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--gray-700);">
+                                    الاحتفاظ بالنسخ الاحتياطية (بالأيام)
+                                </label>
+                                <input type="number" id="backupRetention" value="30" min="7" max="365" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                            </div>
+                        </div>
+
+                        <!-- Notification Settings -->
+                        <div>
+                            <h3 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; color: var(--gray-800);">
+                                الإشعارات
+                            </h3>
+                            
+                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                                <input type="checkbox" id="emailNotifications" checked style="width: 20px; height: 20px;">
+                                <label for="emailNotifications">تفعيل الإشعارات البريدية</label>
+                            </div>
+                            
+                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                                <input type="checkbox" id="smsNotifications" style="width: 20px; height: 20px;">
+                                <label for="smsNotifications">تفعيل الإشعارات عبر الرسائل</label>
+                            </div>
+                            
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <input type="checkbox" id="pushNotifications" checked style="width: 20px; height: 20px;">
+                                <label for="pushNotifications">تفعيل الإشعارات الفورية</label>
+                            </div>
+                        </div>
+
+                        <!-- Logging Settings -->
+                        <div>
+                            <h3 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; color: var(--gray-800);">
+                                تسجيل الأحداث
+                            </h3>
+                            
+                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                                <input type="checkbox" id="enableLogging" checked style="width: 20px; height: 20px;">
+                                <label for="enableLogging">تفعيل تسجيل الأحداث</label>
+                            </div>
+                            
+                            <div style="margin-bottom: 1rem;">
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--gray-700);">
+                                    مستوى التسجيل
+                                </label>
+                                <select id="logLevel" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                                    <option value="error">الأخطاء فقط</option>
+                                    <option value="warning">تحذير وأعلى</option>
+                                    <option value="info" selected>معلومات وأعلى</option>
+                                    <option value="debug">الكل</option>
+                                </select>
+                            </div>
+                            
+                            <div style="margin-bottom: 1rem;">
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--gray-700);">
+                                    الاحتفاظ بالسجلات (بالأيام)
+                                </label>
+                                <input type="number" id="logRetention" value="90" min="7" max="365" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Save Button -->
+        <div style="margin-top: 2rem; text-align: left;">
+            <button class="btn btn-success" onclick="saveSettings()" style="font-size: 1.1rem; padding: 0.75rem 2rem;">
+                <i class="fas fa-save"></i>
+                حفظ الإعدادات
+            </button>
+            <button class="btn btn-secondary" onclick="resetSettings()" style="font-size: 1.1rem; padding: 0.75rem 2rem; margin-right: 1rem;">
+                <i class="fas fa-undo"></i>
+                استعادة الافتراضيات
+            </button>
+        </div>
     </div>
 
     <script src="../js/api.js"></script>
+    <script src="../js/translations.js"></script>
     <script>
         // Check authentication
         if (!checkAuth()) {
@@ -257,210 +440,198 @@
             }, 2000);
         }
 
+        // Show specific section
+        function showSection(section) {
+            // Hide all sections
+            document.querySelectorAll('.settings-section').forEach(sec => {
+                sec.style.display = 'none';
+            });
+
+            // Show selected section
+            document.getElementById(section + 'Section').style.display = 'block';
+
+            // Update button styles
+            document.querySelectorAll('.btn').forEach(btn => {
+                if (btn.onclick && btn.onclick.toString().includes(section)) {
+                    btn.className = 'btn btn-primary';
+                } else if (btn.onclick && btn.onclick.toString().includes('showSection')) {
+                    btn.className = 'btn btn-secondary';
+                }
+            });
+        }
+
         // Save settings
         async function saveSettings() {
             try {
+                showAlert('جاري حفظ الإعدادات...', 'info');
+
+                // Collect all settings
                 const settings = {
-                    systemName: document.getElementById('systemName').value,
-                    defaultLanguage: document.getElementById('defaultLanguage').value,
-                    timezone: document.getElementById('timezone').value,
-                    minPasswordLength: document.getElementById('minPasswordLength').value,
-                    sessionTimeout: document.getElementById('sessionTimeout').value,
-                    requireEmailVerification: document.getElementById('requireEmailVerification').checked,
-                    enableTwoFactor: document.getElementById('enableTwoFactor').checked,
-                    enableCaptcha: document.getElementById('enableCaptcha').checked,
-                    smtpHost: document.getElementById('smtpHost').value,
-                    smtpPort: document.getElementById('smtpPort').value,
-                    smtpEncryption: document.getElementById('smtpEncryption').value,
-                    emailFrom: document.getElementById('emailFrom').value,
-                    emailPassword: document.getElementById('emailPassword').value,
-                    backupFrequency: document.getElementById('backupFrequency').value,
-                    backupRetention: document.getElementById('backupRetention').value
+                    general: {
+                        siteName: document.getElementById('siteName').value,
+                        defaultLanguage: document.getElementById('defaultLanguage').value,
+                        systemEmail: document.getElementById('systemEmail').value,
+                        systemPhone: document.getElementById('systemPhone').value,
+                        timezone: document.getElementById('timezone').value,
+                        maintenanceMode: document.getElementById('maintenanceMode').checked
+                    },
+                    security: {
+                        minPasswordLength: parseInt(document.getElementById('minPasswordLength').value),
+                        passwordExpiryDays: parseInt(document.getElementById('passwordExpiryDays').value),
+                        requireUppercase: document.getElementById('requireUppercase').checked,
+                        requireLowercase: document.getElementById('requireLowercase').checked,
+                        requireNumbers: document.getElementById('requireNumbers').checked,
+                        requireSpecialChars: document.getElementById('requireSpecialChars').checked,
+                        sessionTimeout: parseInt(document.getElementById('sessionTimeout').value),
+                        maxLoginAttempts: parseInt(document.getElementById('maxLoginAttempts').value),
+                        lockoutDuration: parseInt(document.getElementById('lockoutDuration').value),
+                        rememberMeEnabled: document.getElementById('rememberMeEnabled').checked
+                    },
+                    authentication: {
+                        requireEmailVerification: document.getElementById('requireEmailVerification').checked,
+                        enableTwoFactorAuth: document.getElementById('enableTwoFactorAuth').checked,
+                        enableCaptcha: document.getElementById('enableCaptcha').checked,
+                        captchaType: document.getElementById('captchaType').value,
+                        enableGoogleLogin: document.getElementById('enableGoogleLogin').checked,
+                        enableMicrosoftLogin: document.getElementById('enableMicrosoftLogin').checked
+                    },
+                    system: {
+                        autoBackup: document.getElementById('autoBackup').checked,
+                        backupFrequency: document.getElementById('backupFrequency').value,
+                        backupRetention: parseInt(document.getElementById('backupRetention').value),
+                        emailNotifications: document.getElementById('emailNotifications').checked,
+                        smsNotifications: document.getElementById('smsNotifications').checked,
+                        pushNotifications: document.getElementById('pushNotifications').checked,
+                        enableLogging: document.getElementById('enableLogging').checked,
+                        logLevel: document.getElementById('logLevel').value,
+                        logRetention: parseInt(document.getElementById('logRetention').value)
+                    }
                 };
 
-                console.log('💾 Saving settings:', settings);
-                
-                // Send settings to backend
-                const response = await fetch(`${api.baseURL}/admin/settings`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${api.token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(settings)
-                });
-
-                if (response.ok) {
-                    console.log('✅ Settings saved successfully');
-                    showAlert('تم حفظ الإعدادات بنجاح', 'success');
-                } else {
-                    const errorText = await response.text();
-                    console.log('❌ Failed to save settings:', errorText);
-                    showAlert('فشل في حفظ الإعدادات: ' + errorText, 'danger');
-                }
-            } catch (error) {
-                console.error('❌ Error saving settings:', error);
-                // Fallback to localStorage
+                // Save to localStorage (in real app, this would be saved to backend)
                 localStorage.setItem('systemSettings', JSON.stringify(settings));
-                showAlert('تم حفظ الإعدادات محلياً', 'success');
+                
+                // In a real application, you would send this to the backend
+                // await api.saveSettings(settings);
+
+                showAlert('تم حفظ الإعدادات بنجاح', 'success');
+                
+                // Apply some settings immediately
+                applySettings(settings);
+                
+            } catch (error) {
+                console.error('Error saving settings:', error);
+                showAlert('فشل في حفظ الإعدادات: ' + error.message, 'danger');
             }
         }
 
-        // Test email settings
-        async function testEmailSettings() {
-            try {
-                const emailFrom = document.getElementById('emailFrom').value;
-                if (!emailFrom) {
-                    showAlert('يرجى إدخال البريد الإلكتروني أولاً', 'warning');
-                    return;
-                }
-
-                console.log('📧 Testing email settings...');
+        // Apply settings
+        function applySettings(settings) {
+            // Update site name if changed
+            if (settings.general.siteName) {
+                document.title = settings.general.siteName + ' - ExamPro';
+            }
+            
+            // Apply language setting
+            if (settings.general.defaultLanguage) {
+                changeLanguage(settings.general.defaultLanguage);
+            }
+        }
+        
+        // Language switching function
+        function changeLanguage(lang) {
+            // Use the translation system
+            setLanguage(lang);
+            
+            // Update the language selector
+            document.getElementById('defaultLanguage').value = lang;
+            
+            // Save to settings
+            saveLanguageToSettings(lang);
+            
+            // Show message
+            showAlert(t('languageChanged'), 'success');
+            
+            // Apply language changes immediately without reload
+            setTimeout(() => {
+                updatePageLanguage(lang);
+            }, 100);
+        }
+        
+        // Save language preference to settings
+        function saveLanguageToSettings(lang) {
+            const savedSettings = localStorage.getItem('systemSettings');
+            let settings = savedSettings ? JSON.parse(savedSettings) : {};
+            
+            if (!settings.general) {
+                settings.general = {};
+            }
+            settings.general.defaultLanguage = lang;
+            
+            localStorage.setItem('systemSettings', JSON.stringify(settings));
+        }
+        
+        
+        // Reset settings
+        function resetSettings() {
+            if (confirm('هل أنت متأكد من استعادة الإعدادات الافتراضية؟ سيتم فقدان جميع التغييرات الحالية.')) {
+                // Reset form values to defaults
+                document.getElementById('siteName').value = 'ExamPro';
+                document.getElementById('defaultLanguage').value = 'ar';
+                document.getElementById('systemEmail').value = 'admin@exampro.com';
+                document.getElementById('systemPhone').value = '+966500000000';
+                document.getElementById('timezone').value = 'Asia/Riyadh';
+                document.getElementById('maintenanceMode').checked = false;
                 
-                const response = await fetch(`${api.baseURL}/admin/test-email`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${api.token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ email: emailFrom })
-                });
-
-                if (response.ok) {
-                    console.log('✅ Test email sent successfully');
-                    showAlert('جاري إرسال بريد اختبار إلى: ' + emailFrom, 'info');
-                    setTimeout(() => {
-                        showAlert('تم إرسال بريد الاختبار بنجاح', 'success');
-                    }, 2000);
-                } else {
-                    const errorText = await response.text();
-                    console.log('❌ Failed to send test email:', errorText);
-                    showAlert('فشل في إرسال بريد الاختبار: ' + errorText, 'danger');
-                }
-            } catch (error) {
-                console.error('❌ Error testing email:', error);
-                showAlert('خطأ في اختبار البريد الإلكتروني', 'danger');
+                document.getElementById('minPasswordLength').value = 8;
+                document.getElementById('passwordExpiryDays').value = 90;
+                document.getElementById('requireUppercase').checked = true;
+                document.getElementById('requireLowercase').checked = true;
+                document.getElementById('requireNumbers').checked = true;
+                document.getElementById('requireSpecialChars').checked = false;
+                document.getElementById('sessionTimeout').value = 120;
+                document.getElementById('maxLoginAttempts').value = 5;
+                document.getElementById('lockoutDuration').value = 30;
+                document.getElementById('rememberMeEnabled').checked = true;
+                
+                document.getElementById('requireEmailVerification').checked = false;
+                document.getElementById('enableTwoFactorAuth').checked = false;
+                document.getElementById('enableCaptcha').checked = false;
+                document.getElementById('captchaType').value = 'recaptcha';
+                document.getElementById('enableGoogleLogin').checked = false;
+                document.getElementById('enableMicrosoftLogin').checked = false;
+                
+                document.getElementById('autoBackup').checked = true;
+                document.getElementById('backupFrequency').value = 'daily';
+                document.getElementById('backupRetention').value = 30;
+                document.getElementById('emailNotifications').checked = true;
+                document.getElementById('smsNotifications').checked = false;
+                document.getElementById('pushNotifications').checked = true;
+                document.getElementById('enableLogging').checked = true;
+                document.getElementById('logLevel').value = 'info';
+                document.getElementById('logRetention').value = 90;
+                
+                showAlert('تم استعادة الإعدادات الافتراضية', 'success');
             }
         }
 
-        // Create backup
-        async function createBackup() {
-            try {
-                console.log('💾 Creating backup...');
+        // Load saved settings on page load
+        function loadSettings() {
+            const savedSettings = localStorage.getItem('systemSettings');
+            if (savedSettings) {
+                const settings = JSON.parse(savedSettings);
                 
-                const response = await fetch(`${api.baseURL}/admin/backup`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${api.token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (response.ok) {
-                    const blob = await response.blob();
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `backup_${new Date().toISOString().split('T')[0]}.sql`;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    window.URL.revokeObjectURL(url);
-                    
-                    console.log('✅ Backup downloaded successfully');
-                    showAlert('تم إنشاء النسخة الاحتياطية بنجاح', 'success');
-                } else {
-                    const errorText = await response.text();
-                    console.log('❌ Failed to create backup:', errorText);
-                    showAlert('فشل في إنشاء النسخة الاحتياطية: ' + errorText, 'danger');
+                // Apply saved settings to form
+                if (settings.general) {
+                    document.getElementById('siteName').value = settings.general.siteName || 'ExamPro';
+                    document.getElementById('defaultLanguage').value = settings.general.defaultLanguage || 'ar';
+                    document.getElementById('systemEmail').value = settings.general.systemEmail || 'admin@exampro.com';
+                    document.getElementById('systemPhone').value = settings.general.systemPhone || '+966500000000';
+                    document.getElementById('timezone').value = settings.general.timezone || 'Asia/Riyadh';
+                    document.getElementById('maintenanceMode').checked = settings.general.maintenanceMode || false;
                 }
-            } catch (error) {
-                console.error('❌ Error creating backup:', error);
-                showAlert('خطأ في إنشاء النسخة الاحتياطية', 'danger');
-            }
-        }
-
-        // Restore backup
-        async function restoreBackup(event) {
-            try {
-                const file = event.target.files[0];
-                if (!file) return;
-
-                console.log('📂 Restoring backup:', file.name);
                 
-                const formData = new FormData();
-                formData.append('backup', file);
-
-                const response = await fetch(`${api.baseURL}/admin/restore`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${api.token}`
-                    },
-                    body: formData
-                });
-
-                if (response.ok) {
-                    console.log('✅ Backup restored successfully');
-                    showAlert('تم استعادة النسخة الاحتياطية بنجاح', 'success');
-                } else {
-                    const errorText = await response.text();
-                    console.log('❌ Failed to restore backup:', errorText);
-                    showAlert('فشل في استعادة النسخة الاحتياطية: ' + errorText, 'danger');
-                }
-            } catch (error) {
-                console.error('❌ Error restoring backup:', error);
-                showAlert('خطأ في استعادة النسخة الاحتياطية', 'danger');
-            }
-        }
-
-        // View backups
-        async function viewBackups() {
-            try {
-                console.log('📋 Loading backups...');
-                
-                const response = await fetch(`${api.baseURL}/admin/backups`, {
-                    headers: {
-                        'Authorization': `Bearer ${api.token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (response.ok) {
-                    const backups = await response.json();
-                    console.log('✅ Backups loaded:', backups);
-                    
-                    // Display backups in a modal or table
-                    const backupsHtml = backups.map(backup => `
-                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-bottom: 1px solid var(--gray-100);">
-                            <div>
-                                <h4 style="margin: 0; color: var(--gray-800);">${backup.fileName}</h4>
-                                <p style="margin: 0.25rem 0; color: var(--gray-600); font-size: 0.9rem;">
-                                    ${formatDate(backup.createdAt)} • ${backup.fileSize}
-                                </p>
-                            </div>
-                            <div style="display: flex; gap: 0.5rem;">
-                                <button class="btn btn-primary btn-sm" onclick="downloadBackup('${backup.fileName}')">
-                                    <i class="fas fa-download"></i>
-                                    تحميل
-                                </button>
-                                <button class="btn btn-danger btn-sm" onclick="deleteBackup('${backup.fileName}')">
-                                    <i class="fas fa-trash"></i>
-                                    حذف
-                                </button>
-                            </div>
-                        </div>
-                    `).join('');
-                    
-                    // Show in modal or update a container
-                    showAlert('تم تحميل قائمة النسخ الاحتياطية', 'success');
-                } else {
-                    const errorText = await response.text();
-                    console.log('❌ Failed to load backups:', errorText);
-                    showAlert('فشل في تحميل النسخ الاحتياطية: ' + errorText, 'danger');
-                }
-            } catch (error) {
-                console.error('❌ Error loading backups:', error);
-                showAlert('خطأ في تحميل النسخ الاحتياطية', 'danger');
+                // Load other sections...
             }
         }
 
@@ -471,24 +642,14 @@
             }
         }
 
-        // Load saved settings
+        // Initialize
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('⚙️ Settings page loaded');
-            const savedSettings = localStorage.getItem('systemSettings');
-            if (savedSettings) {
-                const settings = JSON.parse(savedSettings);
-                // Populate form fields with saved settings
-                Object.keys(settings).forEach(key => {
-                    const element = document.getElementById(key);
-                    if (element) {
-                        if (element.type === 'checkbox') {
-                            element.checked = settings[key];
-                        } else {
-                            element.value = settings[key];
-                        }
-                    }
-                });
-            }
+            loadSettings();
+            showSection('general');
+            
+            // Apply current language
+            const currentLang = getCurrentLanguage();
+            document.getElementById('defaultLanguage').value = currentLang;
         });
     </script>
 </body>

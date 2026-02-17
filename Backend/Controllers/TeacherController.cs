@@ -46,6 +46,7 @@ namespace ExamSystem.Controllers
                 var exams = await _context.Exams
                     .Where(e => userType == "Admin" || e.TeacherId == userId)
                     .Include(e => e.Course)
+                    .Include(e => e.Course.Teacher)
                     .Include(e => e.StudentExams)
                     .OrderByDescending(e => e.CreatedDate)
                     .Select(e => new
@@ -55,6 +56,7 @@ namespace ExamSystem.Controllers
                         e.Description,
                         e.CourseId,
                         CourseName = e.Course.CourseName,
+                        TeacherName = e.Course.Teacher.FullName,
                         e.DurationMinutes,
                         e.TotalMarks,
                         e.PassingScore,
@@ -68,6 +70,17 @@ namespace ExamSystem.Controllers
                     .ToListAsync();
 
                 Console.WriteLine($"📋 Found {exams.Count} exams for user {userId}");
+                
+                // Log first exam data for debugging
+                if (exams.Count > 0)
+                {
+                    var firstExam = exams.First();
+                    Console.WriteLine($"🔍 First exam data:");
+                    Console.WriteLine($"   Title: {firstExam.Title}");
+                    Console.WriteLine($"   CourseName: {firstExam.CourseName}");
+                    Console.WriteLine($"   TeacherName: {firstExam.TeacherName}");
+                    Console.WriteLine($"   StudentCount: {firstExam.StudentCount}");
+                }
 
                 return Ok(exams);
             }
@@ -185,7 +198,7 @@ namespace ExamSystem.Controllers
         }
 
         [HttpPost("exams")]
-        public async Task<IActionResult> CreateExam([FromBody] CreateExamModel model)
+        public async Task<IActionResult> CreateExam([FromBody] UpdateExamModel model)
         {
             try
             {
@@ -541,7 +554,7 @@ namespace ExamSystem.Controllers
         }
     }
 
-    public class CreateExamModel
+    public class UpdateExamModel
     {
         public string Title { get; set; }
         public string Description { get; set; }
@@ -551,27 +564,5 @@ namespace ExamSystem.Controllers
         public int PassingScore { get; set; }
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
-    }
-
-    public class UpdateExamModel
-    {
-        public string Title { get; set; }
-        public string Description { get; set; }
-        public int DurationMinutes { get; set; }
-        public int TotalMarks { get; set; }
-        public int PassingScore { get; set; }
-        public DateTime? StartDate { get; set; }
-        public DateTime? EndDate { get; set; }
-    }
-
-    public class CreateQuestionModel
-    {
-        public string QuestionText { get; set; }
-        public string OptionA { get; set; }
-        public string OptionB { get; set; }
-        public string OptionC { get; set; }
-        public string OptionD { get; set; }
-        public string CorrectAnswer { get; set; } // A, B, C, D
-        public int Marks { get; set; }
     }
 }

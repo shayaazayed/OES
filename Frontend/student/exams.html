@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الاختبارات المتاحة - ExamPro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header style="background: white; padding: 1rem 0; border-radius: 16px; margin-bottom: 2rem; box-shadow: var(--shadow-lg);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <button onclick="goBack()" style="background: none; border: none; color: var(--primary); font-size: 1.2rem; cursor: pointer;">
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                    <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-clipboard-list" style="color: white; font-size: 1.5rem;"></i>
+                    </div>
+                    <div>
+                        <h1 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-800); margin: 0;">الاختبارات المتاحة</h1>
+                        <p style="color: var(--gray-600); margin: 0; font-size: 0.9rem;">استعرض وابدأ الاختبارات المتاحة لك</p>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div style="text-align: left;">
+                        <div style="color: var(--gray-500); font-size: 0.8rem;">الطالب</div>
+                        <div style="color: var(--gray-800); font-weight: 600;" id="studentName">...</div>
+                    </div>
+                    <button class="btn btn-secondary" onclick="performLogout()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        تسجيل الخروج
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Filters and Search -->
+        <div class="card" style="margin-bottom: 2rem;">
+            <div class="card-header">
+                <h2 class="card-title">البحث والتصفية</h2>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--gray-700); font-weight: 500;">البحث عن اختبار</label>
+                    <div style="position: relative;">
+                        <i class="fas fa-search" style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); color: var(--gray-400);"></i>
+                        <input type="text" id="searchInput" placeholder="ابحث عن اختبار..." style="width: 100%; padding: 0.75rem 1rem 0.75rem 2.5rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                    </div>
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--gray-700); font-weight: 500;">المادة</label>
+                    <select id="courseFilter" style="width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                        <option value="">جميع المواد</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--gray-700); font-weight: 500;">الحالة</label>
+                    <select id="statusFilter" style="width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                        <option value="">جميع الحالات</option>
+                        <option value="available">متاح</option>
+                        <option value="taken">تم أداؤه</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--gray-700); font-weight: 500;">الترتيب حسب</label>
+                    <select id="sortBy" style="width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                        <option value="title">الاسم</option>
+                        <option value="course">المادة</option>
+                        <option value="duration">المدة</option>
+                        <option value="deadline">الموعد النهائي</option>
+                    </select>
+                </div>
+            </div>
+            <div style="margin-top: 1rem; display: flex; gap: 1rem;">
+                <button class="btn btn-primary" onclick="applyFilters()">
+                    <i class="fas fa-filter"></i>
+                    تطبيق الفلاتر
+                </button>
+                <button class="btn btn-secondary" onclick="resetFilters()">
+                    <i class="fas fa-redo"></i>
+                    إعادة تعيين
+                </button>
+            </div>
+        </div>
+
+        <!-- Statistics Summary -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+            <div class="card" style="text-align: center; padding: 1.5rem;">
+                <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #3b82f6, #2563eb); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                    <i class="fas fa-clipboard-list" style="color: white; font-size: 1.2rem;"></i>
+                </div>
+                <h3 style="font-size: 1.5rem; font-weight: 700; color: var(--primary); margin: 0;" id="totalExams">0</h3>
+                <p style="color: var(--gray-600); margin: 0;">إجمالي الاختبارات</p>
+            </div>
+            <div class="card" style="text-align: center; padding: 1.5rem;">
+                <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                    <i class="fas fa-play-circle" style="color: white; font-size: 1.2rem;"></i>
+                </div>
+                <h3 style="font-size: 1.5rem; font-weight: 700; color: var(--success); margin: 0;" id="availableCount">0</h3>
+                <p style="color: var(--gray-600); margin: 0;">متاح للبدء</p>
+            </div>
+            <div class="card" style="text-align: center; padding: 1.5rem;">
+                <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                    <i class="fas fa-check-circle" style="color: white; font-size: 1.2rem;"></i>
+                </div>
+                <h3 style="font-size: 1.5rem; font-weight: 700; color: var(--warning); margin: 0;" id="takenCount">0</h3>
+                <p style="color: var(--gray-600); margin: 0;">تم أداؤه</p>
+            </div>
+            <div class="card" style="text-align: center; padding: 1.5rem;">
+                <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #8b5cf6, #7c3aed); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                    <i class="fas fa-clock" style="color: white; font-size: 1.2rem;"></i>
+                </div>
+                <h3 style="font-size: 1.5rem; font-weight: 700; color: var(--secondary); margin: 0;" id="urgentCount">0</h3>
+                <p style="color: var(--gray-600); margin: 0;">مستعجل</p>
+            </div>
+        </div>
+
+        <!-- Exams List -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">قائمة الاختبارات</h2>
+                <div style="display: flex; gap: 1rem; align-items: center;">
+                    <span style="color: var(--gray-600); font-size: 0.9rem;" id="resultsCount">عرض 0 من 0</span>
+                    <button class="btn btn-sm btn-secondary" onclick="refreshExams()">
+                        <i class="fas fa-sync-alt"></i>
+                        تحديث
+                    </button>
+                </div>
+            </div>
+            <div id="examsList" style="max-height: 600px; overflow-y: auto;">
+                <!-- Exams will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script>
+        // Global variables
+        let allExams = [];
+        let filteredExams = [];
+
+        // Check authentication
+        if (!checkAuth()) {
+            window.location.href = '../login.html';
+        }
+
+        // Check if user is student
+        if (!api.isStudent()) {
+            showAlert('غير مصرح لك بالوصول لهذه الصفحة', 'danger');
+            setTimeout(() => {
+                window.location.href = '../login.html';
+            }, 2000);
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('🚀 Student exams page loaded');
+            loadStudentInfo();
+            loadExams();
+            setupEventListeners();
+            
+            // Check if course filter is set from courses page
+            const selectedCourseId = localStorage.getItem('selectedCourseId');
+            const selectedCourseName = localStorage.getItem('selectedCourseName');
+            if (selectedCourseId && selectedCourseName) {
+                // Set course filter
+                setTimeout(() => {
+                    document.getElementById('courseFilter').value = selectedCourseName;
+                    applyFilters();
+                    // Clear the stored values
+                    localStorage.removeItem('selectedCourseId');
+                    localStorage.removeItem('selectedCourseName');
+                }, 100);
+            }
+        });
+
+        // Setup event listeners
+        function setupEventListeners() {
+            document.getElementById('searchInput').addEventListener('input', debounce(applyFilters, 300));
+            document.getElementById('courseFilter').addEventListener('change', applyFilters);
+            document.getElementById('statusFilter').addEventListener('change', applyFilters);
+            document.getElementById('sortBy').addEventListener('change', applyFilters);
+        }
+
+        // Load student information
+        function loadStudentInfo() {
+            const userName = api.getUserName();
+            document.getElementById('studentName').textContent = userName;
+        }
+
+        // Load all exams
+        async function loadExams() {
+            try {
+                showLoading('جاري تحميل الاختبارات...');
+                
+                const availableExams = await api.getStudentAvailableExams();
+                console.log('✅ Available exams loaded:', availableExams);
+                
+                allExams = availableExams;
+                filteredExams = [...allExams];
+                
+                populateCourseFilter();
+                updateStatistics();
+                renderExams();
+                
+            } catch (error) {
+                console.error('❌ Failed to load exams:', error);
+                showAlert('فشل في تحميل الاختبارات: ' + error.message, 'danger');
+                document.getElementById('examsList').innerHTML = `
+                    <div style="text-align: center; padding: 3rem; color: var(--danger);">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                        <p>فشل في تحميل الاختبارات</p>
+                        <button class="btn btn-primary" onclick="loadExams()" style="margin-top: 1rem;">إعادة المحاولة</button>
+                    </div>
+                `;
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Populate course filter dropdown
+        function populateCourseFilter() {
+            const courseFilter = document.getElementById('courseFilter');
+            const courses = [...new Set(allExams.map(exam => exam.CourseName))];
+            
+            courseFilter.innerHTML = '<option value="">جميع المواد</option>';
+            courses.forEach(course => {
+                courseFilter.innerHTML += `<option value="${course}">${course}</option>`;
+            });
+        }
+
+        // Update statistics
+        function updateStatistics() {
+            const total = allExams.length;
+            const available = allExams.filter(exam => !exam.IsTaken).length;
+            const taken = allExams.filter(exam => exam.IsTaken).length;
+            const urgent = allExams.filter(exam => {
+                if (!exam.EndDate || exam.IsTaken) return false;
+                const deadline = new Date(exam.EndDate);
+                const now = new Date();
+                const hoursUntilDeadline = (deadline - now) / (1000 * 60 * 60);
+                return hoursUntilDeadline <= 24 && hoursUntilDeadline > 0;
+            }).length;
+
+            document.getElementById('totalExams').textContent = total;
+            document.getElementById('availableCount').textContent = available;
+            document.getElementById('takenCount').textContent = taken;
+            document.getElementById('urgentCount').textContent = urgent;
+        }
+
+        // Apply filters
+        function applyFilters() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const selectedCourse = document.getElementById('courseFilter').value;
+            const selectedStatus = document.getElementById('statusFilter').value;
+            const sortBy = document.getElementById('sortBy').value;
+
+            // Filter exams
+            filteredExams = allExams.filter(exam => {
+                const matchesSearch = exam.Title.toLowerCase().includes(searchTerm) || 
+                                    exam.CourseName.toLowerCase().includes(searchTerm);
+                const matchesCourse = !selectedCourse || exam.CourseName === selectedCourse;
+                const matchesStatus = !selectedStatus || 
+                                    (selectedStatus === 'available' && !exam.IsTaken) ||
+                                    (selectedStatus === 'taken' && exam.IsTaken);
+                
+                return matchesSearch && matchesCourse && matchesStatus;
+            });
+
+            // Sort exams
+            filteredExams.sort((a, b) => {
+                switch (sortBy) {
+                    case 'title':
+                        return a.Title.localeCompare(b.Title);
+                    case 'course':
+                        return a.CourseName.localeCompare(b.CourseName);
+                    case 'duration':
+                        return a.DurationMinutes - b.DurationMinutes;
+                    case 'deadline':
+                        if (!a.EndDate) return 1;
+                        if (!b.EndDate) return -1;
+                        return new Date(a.EndDate) - new Date(b.EndDate);
+                    default:
+                        return 0;
+                }
+            });
+
+            renderExams();
+        }
+
+        // Reset filters
+        function resetFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('courseFilter').value = '';
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('sortBy').value = 'title';
+            
+            filteredExams = [...allExams];
+            renderExams();
+        }
+
+        // Render exams
+        function renderExams() {
+            const examsList = document.getElementById('examsList');
+            const resultsCount = document.getElementById('resultsCount');
+            
+            resultsCount.textContent = `عرض ${filteredExams.length} من ${allExams.length}`;
+
+            if (filteredExams.length === 0) {
+                examsList.innerHTML = `
+                    <div style="text-align: center; padding: 3rem; color: var(--gray-500);">
+                        <i class="fas fa-search" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                        <p>لا توجد اختبارات مطابقة للفلاتر المحددة</p>
+                        <button class="btn btn-secondary" onclick="resetFilters()" style="margin-top: 1rem;">إعادة تعيين الفلاتر</button>
+                    </div>
+                `;
+                return;
+            }
+
+            const examsHtml = filteredExams.map(exam => {
+                const isUrgent = exam.EndDate && !exam.IsTaken && 
+                               ((new Date(exam.EndDate) - new Date()) / (1000 * 60 * 60)) <= 24;
+                
+                return `
+                    <div style="display: flex; align-items: center; gap: 1rem; padding: 1.5rem; border-bottom: 1px solid var(--gray-100); hover: background: var(--gray-50);">
+                        <div style="width: 60px; height: 60px; background: ${exam.IsTaken ? 'var(--gray-400)' : isUrgent ? 'var(--danger)' : 'var(--warning)'}; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas ${exam.IsTaken ? 'fa-check' : 'fa-clipboard-list'}" style="color: white; font-size: 1.5rem;"></i>
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                                <h3 style="margin: 0; font-size: 1.1rem; color: var(--gray-800); font-weight: 600;">${exam.Title}</h3>
+                                ${isUrgent ? '<span style="background: var(--danger); color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">مستعجل</span>' : ''}
+                            </div>
+                            <p style="margin: 0.25rem 0; color: var(--gray-600); font-size: 0.9rem;">
+                                <i class="fas fa-book"></i> ${exam.CourseName} • 
+                                <i class="fas fa-user"></i> ${exam.TeacherName}
+                            </p>
+                            <div style="display: flex; gap: 1rem; margin-top: 0.5rem; font-size: 0.85rem; color: var(--gray-500);">
+                                <span><i class="fas fa-clock"></i> ${exam.DurationMinutes} دقيقة</span>
+                                <span><i class="fas fa-question-circle"></i> ${exam.QuestionCount} سؤال</span>
+                                <span><i class="fas fa-star"></i> ${exam.TotalMarks} درجة</span>
+                                <span><i class="fas fa-trophy"></i> ${exam.PassingScore} للنجاح</span>
+                            </div>
+                            ${exam.EndDate ? `
+                                <div style="margin-top: 0.5rem; font-size: 0.85rem; color: ${isUrgent ? 'var(--danger)' : 'var(--gray-500)'};">
+                                    <i class="fas fa-calendar-alt"></i> الموعد النهائي: ${formatDate(exam.EndDate)}
+                                </div>
+                            ` : ''}
+                        </div>
+                        <div style="text-align: center;">
+                            ${exam.IsTaken ? 
+                                `<span style="color: var(--success); font-weight: 600; display: block; margin-bottom: 0.5rem;">
+                                    <i class="fas fa-check-circle"></i> تم أداؤه
+                                </span>
+                                <button class="btn btn-secondary btn-sm" onclick="viewResult(${exam.Id})">
+                                    <i class="fas fa-eye"></i> عرض النتيجة
+                                </button>` :
+                                `<button class="btn btn-primary" onclick="startExam(${exam.Id})">
+                                    <i class="fas fa-play"></i> بدء الاختبار
+                                </button>`
+                            }
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            examsList.innerHTML = examsHtml;
+        }
+
+        // Start exam
+        async function startExam(examId) {
+            try {
+                console.log('🚀 Starting exam:', examId);
+                showLoading('جاري بدء الاختبار...');
+
+                const result = await api.startStudentExam(examId);
+                console.log('✅ Exam started:', result);
+                showAlert('جاري بدء الاختبار...', 'info');
+                
+                setTimeout(() => {
+                    window.location.href = `exam.html?id=${examId}`;
+                }, 1000);
+            } catch (error) {
+                console.error('❌ Error starting exam:', error);
+                showAlert('خطأ في بدء الاختبار: ' + error.message, 'danger');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // View result
+        async function viewResult(examId) {
+            try {
+                showLoading('جاري تحميل النتيجة...');
+                const result = await api.getStudentExamResult(examId);
+                // Store result data and redirect to results page
+                localStorage.setItem('currentExamResult', JSON.stringify(result));
+                window.location.href = `result.html?id=${examId}`;
+            } catch (error) {
+                console.error('❌ Error loading result:', error);
+                showAlert('خطأ في تحميل النتيجة: ' + error.message, 'danger');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Refresh exams
+        function refreshExams() {
+            loadExams();
+        }
+
+        // Go back
+        function goBack() {
+            window.location.href = 'dashboard.html';
+        }
+
+        // Logout
+        function performLogout() {
+            if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
+                api.logout();
+            }
+        }
+
+        // Debounce function
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+    </script>
+</body>
+
+</html>
