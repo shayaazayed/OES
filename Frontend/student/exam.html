@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار - ExamPro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --primary-light: #dbeafe;
+            --success: #10b981;
+            --success-light: #d1fae5;
+            --warning: #f59e0b;
+            --warning-light: #fef3c7;
+            --danger: #ef4444;
+            --danger-light: #fee2e2;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--primary-light), white);
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        .exam-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .exam-header {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-lg);
+            text-align: center;
+        }
+
+        .exam-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--gray-800);
+            margin-bottom: 0.5rem;
+        }
+
+        .exam-info {
+            color: var(--gray-600);
+            margin-bottom: 1rem;
+        }
+
+        .timer-container {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-lg);
+            transition: all 0.3s ease;
+        }
+
+        .timer-container.warning {
+            background: linear-gradient(135deg, var(--warning), #d97706);
+            animation: pulse 1s infinite;
+        }
+
+        .timer-container.danger {
+            background: linear-gradient(135deg, var(--danger), #dc2626);
+            animation: pulse 0.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        .timer {
+            font-size: 3rem;
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+            margin: 0;
+        }
+
+        .timer-label {
+            font-size: 1rem;
+            opacity: 0.9;
+            margin-top: 0.5rem;
+        }
+
+        .progress-container {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .progress-dots {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .progress-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--gray-300);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .progress-dot.current {
+            background: var(--primary);
+            transform: scale(1.2);
+        }
+
+        .progress-dot.answered {
+            background: var(--success);
+        }
+
+        .progress-dot:hover {
+            transform: scale(1.1);
+        }
+
+        .question-container {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--gray-100);
+        }
+
+        .question-number {
+            background: var(--primary);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .question-text {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            color: var(--gray-800);
+            margin-bottom: 2rem;
+        }
+
+        .options-container {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .option {
+            background: var(--gray-50);
+            border: 2px solid var(--gray-200);
+            border-radius: 12px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .option:hover {
+            background: var(--primary-light);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .option.selected {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        .option-radio {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--gray-400);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .option.selected .option-radio {
+            background: white;
+            border-color: white;
+        }
+
+        .option.selected .option-radio::after {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: var(--primary);
+            border-radius: 50%;
+        }
+
+        .option-text {
+            flex: 1;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        .controls-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: var(--gray-200);
+            color: var(--gray-700);
+        }
+
+        .btn-secondary:hover {
+            background: var(--gray-300);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .floating-controls {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            display: flex;
+            gap: 1rem;
+            z-index: 1000;
+        }
+
+        .floating-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-lg);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .floating-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .fullscreen-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+        }
+
+        .save-indicator {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background: var(--success);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 1000;
+        }
+
+        .save-indicator.show {
+            opacity: 1;
+        }
+
+        @media (max-width: 768px) {
+            .exam-container {
+                padding: 1rem;
+            }
+            
+            .timer {
+                font-size: 2rem;
+            }
+            
+            .controls-container {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="exam-container">
+        <!-- Exam Header -->
+        <div class="exam-header">
+            <h1 class="exam-title" id="examTitle">جاري تحميل الاختبار...</h1>
+            <p class="exam-info" id="examInfo">يرجى الانتظار</p>
+        </div>
+
+        <!-- Timer -->
+        <div class="timer-container" id="timerContainer">
+            <div class="timer" id="timer">00:00:00</div>
+            <div class="timer-label">الوقت المتبقي</div>
+        </div>
+
+        <!-- Progress -->
+        <div class="progress-container">
+            <div class="progress-dots" id="progressDots">
+                <!-- Progress dots will be generated here -->
+            </div>
+            <div style="text-align: center; color: var(--gray-600);">
+                <span id="currentQuestion">1</span> من <span id="totalQuestions">1</span>
+            </div>
+        </div>
+
+        <!-- Question Container -->
+        <div class="question-container">
+            <div class="question-header">
+                <span class="question-number" id="questionNumber">السؤال 1</span>
+                <span style="color: var(--gray-600);">درجة السؤال: <span id="questionScore">1</span> نقطة</span>
+            </div>
+            <div class="question-text" id="questionText">
+                جاري تحميل السؤال...
+            </div>
+            <div class="options-container" id="optionsContainer">
+                <!-- Options will be generated here -->
+            </div>
+            <div class="controls-container">
+                <button class="btn btn-secondary" id="prevBtn" onclick="previousQuestion()">
+                    <i class="fas fa-arrow-right"></i>
+                    السابق
+                </button>
+                <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()">
+                    التالي
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <button class="btn btn-success" id="submitBtn" onclick="submitExam()" style="display: none;">
+                    <i class="fas fa-paper-plane"></i>
+                    تسليم الاختبار
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Controls -->
+    <div class="floating-controls">
+        <button class="floating-btn fullscreen-btn" onclick="toggleFullscreen()" title="ملء الشاشة">
+            <i class="fas fa-expand"></i>
+        </button>
+    </div>
+
+    <!-- Save Indicator -->
+    <div class="save-indicator" id="saveIndicator">
+        <i class="fas fa-check"></i>
+        تم الحفظ
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script>
+        // Check authentication
+        if (!checkAuth()) {
+            window.location.href = '../login.html';
+        }
+
+        // Check if user is student
+        if (!api.isStudent()) {
+            showAlert('غير مصرح لك بالوصول لهذه الصفحة', 'danger');
+            setTimeout(() => {
+                window.location.href = '../login.html';
+            }, 2000);
+        }
+
+        // Exam state
+        let examData = null;
+        let currentQuestionIndex = 0;
+        let answers = {};
+        let timerInterval = null;
+        let timeRemaining = 0;
+        let examStartTime = null;
+
+        // Get exam ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const examId = urlParams.get('id');
+
+        // Prevent window close
+        window.addEventListener('beforeunload', function (e) {
+            if (examData && !examData.submitted) {
+                e.preventDefault();
+                e.returnValue = 'هل أنت متأكد من مغادرة الصفحة؟ ستفقد إجاباتك.';
+                return e.returnValue;
+            }
+        });
+
+        // Initialize exam
+        async function initializeExam() {
+            try {
+                console.log('🚀 Initializing exam:', examId);
+                
+                if (!examId) {
+                    throw new Error('معرف الاختبار غير موجود');
+                }
+
+                showLoading('جاري تحميل الاختبار...');
+
+                // Try to get exam details first, but handle if it fails
+                let examDetails = null;
+                try {
+                    examDetails = await api.getStudentExam(examId);
+                    console.log('✅ Exam details loaded:', examDetails);
+                } catch (error) {
+                    console.log('⚠️ Could not load exam details, proceeding with questions only');
+                }
+
+                // Get exam questions (this should work if exam is started)
+                const questionsResponse = await api.getStudentExamQuestions(examId);
+                console.log('✅ Questions loaded:', questionsResponse);
+
+                // Create examData structure
+                examData = {
+                    ...examDetails,
+                    questions: questionsResponse.questions,
+                    remainingMinutes: questionsResponse.remainingMinutes,
+                    durationMinutes: examDetails?.durationMinutes || 60,
+                    title: examDetails?.title || 'اختبار',
+                    passingScore: examDetails?.passingScore || 60
+                };
+
+                console.log('📊 Final examData structure:', examData);
+                console.log('📊 Questions array:', examData.questions);
+                console.log('📊 First question:', examData.questions[0]);
+
+                // Check if exam is already completed (if we have exam details)
+                if (examDetails && examDetails.isStarted) {
+                    if (examDetails.status === "Submitted" || examDetails.status === "Graded" || examDetails.status === "Expired") {
+                        console.log('📊 Exam already completed, redirecting to exams list');
+                        showAlert('لقد قمت بهذا الاختبار بالفعل، جاري تحويلك إلى قائمة الاختبارات', 'info');
+                        setTimeout(() => {
+                            window.location.href = 'exams.html';
+                        }, 2000);
+                        return;
+                    }
+                }
+
+                // Initialize timer - use remainingMinutes if available, otherwise use durationMinutes
+                if (examData.remainingMinutes !== undefined && examData.remainingMinutes > 0) {
+                    timeRemaining = examData.remainingMinutes * 60; // Convert to seconds
+                } else {
+                    timeRemaining = examData.durationMinutes * 60; // Convert to seconds
+                }
+                examStartTime = new Date();
+
+                // Load first question
+                await loadQuestion(0);
+
+                // Start timer
+                startTimer();
+
+                // Generate progress dots
+                generateProgressDots();
+
+                // Start auto-save
+                startAutoSave();
+
+                // Update UI
+                updateExamInfo();
+                hideLoading();
+
+            } catch (error) {
+                console.error('❌ Failed to initialize exam:', error);
+                showAlert('خطأ في تحميل الاختبار: ' + error.message, 'danger');
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 3000);
+            }
+        }
+
+        // Load question
+        async function loadQuestion(index) {
+            try {
+                console.log(`📝 Loading question ${index + 1}`);
+                
+                if (!examData.questions || index >= examData.questions.length) {
+                    throw new Error('السؤال المطلوب غير موجود');
+                }
+
+                const question = examData.questions[index];
+                if (!question) {
+                    throw new Error('بيانات السؤال غير متوفرة');
+                }
+                
+                // Update question info
+                document.getElementById('questionNumber').textContent = `السؤال ${index + 1}`;
+                document.getElementById('questionScore').textContent = question.marks || question.score || 1;
+                document.getElementById('questionText').textContent = question.questionText || question.text || 'لا يوجد نص للسؤال';
+                document.getElementById('currentQuestion').textContent = index + 1;
+                document.getElementById('totalQuestions').textContent = examData.questions.length;
+
+                // Generate options - handle different option formats
+                const options = [
+                    question.optionA,
+                    question.optionB, 
+                    question.optionC,
+                    question.optionD
+                ].filter(opt => opt != null);
+                generateOptions(options);
+
+                // Update progress
+                updateProgress();
+
+                // Update controls
+                updateControls();
+
+            } catch (error) {
+                console.error('❌ Failed to load question:', error);
+                showAlert('خطأ في تحميل السؤال: ' + error.message, 'danger');
+            }
+        }
+
+        // Generate options
+        function generateOptions(options) {
+            const container = document.getElementById('optionsContainer');
+            container.innerHTML = '';
+
+            options.forEach((option, index) => {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'option';
+                optionDiv.onclick = () => selectOption(index);
+                
+                const isSelected = answers[currentQuestionIndex] === index;
+                if (isSelected) {
+                    optionDiv.classList.add('selected');
+                }
+
+                optionDiv.innerHTML = `
+                    <div class="option-radio">
+                        ${isSelected ? '<div style="width: 8px; height: 8px; background: white; border-radius: 50%;"></div>' : ''}
+                    </div>
+                    <div class="option-text">${option.text || option}</div>
+                `;
+
+                container.appendChild(optionDiv);
+            });
+        }
+
+        // Select option
+        function selectOption(optionIndex) {
+            answers[currentQuestionIndex] = optionIndex;
+            const question = examData.questions[currentQuestionIndex];
+            const options = [
+                question.optionA,
+                question.optionB,
+                question.optionC,
+                question.optionD
+            ].filter(opt => opt != null);
+            generateOptions(options);
+            updateProgress();
+            
+            // Auto-save answer to backend
+            saveAnswerToBackend(currentQuestionIndex, optionIndex);
+        }
+
+        // Save answer to backend
+        async function saveAnswerToBackend(questionIndex, answerIndex) {
+            try {
+                const question = examData.questions[questionIndex];
+                if (!question || !question.id) return;
+
+                const answerLetter = String.fromCharCode(65 + answerIndex); // A, B, C, D
+                
+                await api.submitStudentAnswer(examId, question.id, answerLetter);
+                console.log(`✅ Answer saved for question ${questionIndex + 1}: ${answerLetter}`);
+            } catch (error) {
+                console.error('❌ Failed to save answer:', error);
+                // Don't show alert to user to avoid distraction during exam
+            }
+        }
+
+        // Navigate to previous question
+        function previousQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                loadQuestion(currentQuestionIndex);
+            }
+        }
+
+        // Navigate to next question
+        function nextQuestion() {
+            if (currentQuestionIndex < examData.questions.length - 1) {
+                currentQuestionIndex++;
+                loadQuestion(currentQuestionIndex);
+            }
+        }
+
+        // Update controls
+        function updateControls() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const submitBtn = document.getElementById('submitBtn');
+
+            prevBtn.disabled = currentQuestionIndex === 0;
+            
+            if (currentQuestionIndex === examData.questions.length - 1) {
+                nextBtn.style.display = 'none';
+                submitBtn.style.display = 'block';
+            } else {
+                nextBtn.style.display = 'block';
+                submitBtn.style.display = 'none';
+            }
+        }
+
+        // Generate progress dots
+        function generateProgressDots() {
+            const container = document.getElementById('progressDots');
+            container.innerHTML = '';
+
+            for (let i = 0; i < examData.questions.length; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'progress-dot';
+                dot.onclick = () => {
+                    currentQuestionIndex = i;
+                    loadQuestion(i);
+                };
+                container.appendChild(dot);
+            }
+        }
+
+        // Update progress
+        function updateProgress() {
+            const dots = document.querySelectorAll('.progress-dot');
+            dots.forEach((dot, index) => {
+                dot.classList.remove('current', 'answered');
+                if (index === currentQuestionIndex) {
+                    dot.classList.add('current');
+                }
+                if (answers[index] !== undefined) {
+                    dot.classList.add('answered');
+                }
+            });
+        }
+
+        // Start timer
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timeRemaining--;
+                updateTimerDisplay();
+                
+                if (timeRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    // Time is up, submit exam automatically without alert
+                    submitExam(true);
+                } else if (timeRemaining <= 300) { // 5 minutes
+                    document.getElementById('timerContainer').classList.add('warning');
+                } else if (timeRemaining <= 60) { // 1 minute
+                    document.getElementById('timerContainer').classList.remove('warning');
+                    document.getElementById('timerContainer').classList.add('danger');
+                }
+            }, 1000);
+        }
+
+        // Update timer display
+        function updateTimerDisplay() {
+            const hours = Math.floor(timeRemaining / 3600);
+            const minutes = Math.floor((timeRemaining % 3600) / 60);
+            const seconds = timeRemaining % 60;
+            
+            const display = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            document.getElementById('timer').textContent = display;
+        }
+
+        // Update exam info
+        function updateExamInfo() {
+            document.getElementById('examTitle').textContent = examData.title || examData.examTitle || 'اختبار';
+            document.getElementById('examInfo').textContent = `المدة: ${examData.durationMinutes} دقيقة • عدد الأسئلة: ${examData.questions.length}`;
+        }
+
+        // Submit exam
+        async function submitExam(autoSubmit = false) {
+            try {
+                if (!autoSubmit && !confirm('هل أنت متأكد من تسليم الاختبار؟ لا يمكنك التعديل بعد التسليم.')) {
+                    return;
+                }
+
+                clearInterval(timerInterval);
+                examData.submitted = true;
+
+                showLoading('جاري تسليم الاختبار...');
+
+                // Calculate score
+                let score = 0;
+                let totalScore = 0;
+
+                examData.questions.forEach((question, index) => {
+                    const correctAnswer = question.correctAnswer || question.correctAnswerIndex;
+                    const userAnswer = answers[index]; // This is numeric (0, 1, 2, 3)
+                    const userAnswerLetter = userAnswer !== undefined ? String.fromCharCode(65 + userAnswer) : null; // Convert to A, B, C, D
+                    const questionScore = question.marks || question.score || 1;
+                    
+                    totalScore += questionScore;
+                    if (userAnswerLetter === correctAnswer) {
+                        score += questionScore;
+                    }
+                });
+
+                const percentage = (score / totalScore) * 100;
+                const passed = percentage >= (examData.passingScore || 60);
+
+                // Submit to backend
+                const result = await api.submitStudentExam(examId, {
+                    answers: answers,
+                    score: score,
+                    totalScore: totalScore,
+                    percentage: percentage,
+                    passed: passed,
+                    timeTaken: (new Date() - examStartTime) / 1000,
+                    submittedAt: new Date().toISOString()
+                });
+
+                console.log('✅ Exam submitted:', result);
+
+                // Show result
+                showResult(score, totalScore, percentage, passed);
+
+            } catch (error) {
+                console.error('❌ Failed to submit exam:', error);
+                showAlert('خطأ في تسليم الاختبار: ' + error.message, 'danger');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Show result
+        function showResult(score, totalScore, percentage, passed) {
+            // Generate questions review HTML
+            const questionsReview = examData.questions.map((question, index) => {
+                const userAnswer = answers[index]; // This is the index (0, 1, 2, 3)
+                const userAnswerLetter = userAnswer !== undefined ? String.fromCharCode(65 + userAnswer) : null; // Convert to A, B, C, D
+                const correctAnswer = question.correctAnswer; // This should be A, B, C, or D from backend
+                const isCorrect = userAnswerLetter === correctAnswer;
+                
+                const options = [
+                    question.optionA,
+                    question.optionB,
+                    question.optionC,
+                    question.optionD
+                ].filter(opt => opt != null);
+                
+                return `
+                    <div style="background: ${isCorrect ? '#d4edda' : '#f8d7da'}; 
+                                padding: 1.5rem; 
+                                border-radius: 8px; 
+                                margin-bottom: 1rem;
+                                border-left: 4px solid ${isCorrect ? 'var(--success)' : 'var(--danger)'};">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                            <h4 style="margin: 0; color: var(--gray-800);">
+                                السؤال ${index + 1}: ${question.questionText}
+                            </h4>
+                            <span style="background: ${isCorrect ? 'var(--success)' : 'var(--danger)'}; 
+                                         color: white; 
+                                         padding: 0.25rem 0.5rem; 
+                                         border-radius: 4px; 
+                                         font-size: 0.8rem;">
+                                ${isCorrect ? 'صحيح' : 'خطأ'}
+                            </span>
+                        </div>
+                        <div style="margin-bottom: 0.5rem;">
+                            <strong>الخيارات:</strong>
+                            <ul style="margin: 0.5rem 0; padding-right: 1.5rem;">
+                                ${options.map((option, optIndex) => {
+                                    const optionLetter = String.fromCharCode(65 + optIndex);
+                                    const isCorrectOption = optionLetter === correctAnswer;
+                                    const isUserOption = optionLetter === userAnswerLetter;
+                                    return `
+                                        <li style="margin: 0.25rem 0; 
+                                                   color: ${isCorrectOption ? 'var(--success)' : 'var(--gray-600)'};
+                                                   font-weight: ${isCorrectOption ? 'bold' : 'normal'};
+                                                   ${isUserOption ? 'background: #e3f2fd; padding: 0.25rem; border-radius: 4px;' : ''}">
+                                            ${optionLetter}. ${option}
+                                            ${isCorrectOption ? ' ✓ (الإجابة الصحيحة)' : ''}
+                                            ${isUserOption && !isCorrectOption ? ' (إجابتك)' : ''}
+                                            ${isUserOption && isCorrectOption ? ' (إجابتك ✓)' : ''}
+                                        </li>
+                                    `;
+                                }).join('')}
+                            </ul>
+                        </div>
+                        <div style="font-size: 0.9rem; color: var(--gray-600); margin-top: 0.5rem;">
+                            <strong>إجابتك:</strong> ${userAnswerLetter || 'لم تجب'} | 
+                            <strong>الإجابة الصحيحة:</strong> ${correctAnswer} | 
+                            <strong>درجة السؤال:</strong> ${question.marks || question.score || 1}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            const resultHtml = `
+                <div style="text-align: center; padding: 2rem;">
+                    <h2 style="margin-bottom: 2rem; color: var(--gray-800);">
+                        ${passed ? '🎉 مبروك! لقد نجحت في الاختبار' : '😔 للأسف، لم تنجح في الاختبار'}
+                    </h2>
+                    <div style="background: ${passed ? 'var(--success-light)' : 'var(--danger-light)'}; 
+                                padding: 2rem; 
+                                border-radius: 12px; 
+                                margin-bottom: 2rem;">
+                        <div style="font-size: 3rem; font-weight: 700; color: ${passed ? 'var(--success)' : 'var(--danger)'}; margin-bottom: 1rem;">
+                            ${percentage.toFixed(1)}%
+                        </div>
+                        <div style="font-size: 1.2rem; color: var(--gray-700); margin-bottom: 0.5rem;">
+                            الدرجة: ${score}/${totalScore}
+                        </div>
+                        <div style="font-size: 1rem; color: var(--gray-600);">
+                            ${passed ? 'ناجح' : 'راسب'}
+                        </div>
+                    </div>
+                    
+                    <h3 style="text-align: right; margin-bottom: 1.5rem; color: var(--gray-800);">
+                        مراجعة الإجابات
+                    </h3>
+                    
+                    <div style="max-height: 400px; overflow-y: auto; text-align: right;">
+                        ${questionsReview}
+                    </div>
+                    
+                    <button class="btn btn-primary" onclick="window.location.href='dashboard.html'">
+                        إغلاق
+                    </button>
+                </div>
+            `;
+
+            document.querySelector('.exam-container').innerHTML = resultHtml;
+        }
+
+        // Auto-save
+        function startAutoSave() {
+            setInterval(() => {
+                saveToLocalStorage();
+                showSaveIndicator();
+            }, 30000); // Save every 30 seconds
+        }
+
+        // Save to localStorage
+        function saveToLocalStorage() {
+            const saveData = {
+                examId: examId,
+                answers: answers,
+                currentQuestionIndex: currentQuestionIndex,
+                timeRemaining: timeRemaining,
+                examStartTime: examStartTime,
+                savedAt: new Date().toISOString()
+            };
+            
+            localStorage.setItem(`exam_${examId}`, JSON.stringify(saveData));
+            console.log('💾 Exam saved to localStorage');
+        }
+
+        // Load from localStorage
+        function loadFromLocalStorage() {
+            const savedData = localStorage.getItem(`exam_${examId}`);
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                answers = data.answers || {};
+                currentQuestionIndex = data.currentQuestionIndex || 0;
+                timeRemaining = data.timeRemaining || (examData.durationMinutes * 60);
+                examStartTime = new Date(data.examStartTime);
+                console.log('📂 Exam loaded from localStorage');
+            }
+        }
+
+        // Show save indicator
+        function showSaveIndicator() {
+            const indicator = document.getElementById('saveIndicator');
+            indicator.classList.add('show');
+            setTimeout(() => {
+                indicator.classList.remove('show');
+            }, 2000);
+        }
+
+        // Toggle fullscreen
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'ArrowRight' && !document.getElementById('nextBtn').disabled) {
+                nextQuestion();
+            } else if (e.key === 'ArrowLeft' && !document.getElementById('prevBtn').disabled) {
+                previousQuestion();
+            } else if (e.key >= '1' && e.key <= '4') {
+                const optionIndex = parseInt(e.key) - 1;
+                const question = examData.questions[currentQuestionIndex];
+                const options = [
+                    question.optionA,
+                    question.optionB,
+                    question.optionC,
+                    question.optionD
+                ].filter(opt => opt != null);
+                if (optionIndex < options.length) {
+                    selectOption(optionIndex);
+                }
+            }
+        });
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('🚀 Exam page loaded');
+            initializeExam();
+        });
+    </script>
+</body>
+
+</html>

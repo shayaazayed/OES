@@ -264,6 +264,52 @@ namespace ExamSystem.Controllers
             return Ok(new { studentExam.Id, studentExam.StartTime, exam.DurationMinutes });
         }
 
+        [HttpGet("exams/{id}")]
+        public async Task<IActionResult> GetExam(int id)
+        {
+            var studentId = GetStudentId();
+
+            // Check if student is enrolled in the course
+            var exam = await _context.Exams
+                .Include(e => e.Course)
+                .Include(e => e.Course.Teacher)
+                .FirstOrDefaultAsync(e => e.Id == id);
+
+            if (exam == null)
+            {
+                return NotFound(new { message = "Exam not found" });
+            }
+
+            var isEnrolled = await _context.Enrollments
+                .AnyAsync(e => e.CourseId == exam.CourseId && e.StudentId == studentId);
+
+            if (!isEnrolled)
+            {
+                return BadRequest(new { message = "You are not enrolled in this course" });
+            }
+
+            // Check if student has started this exam
+            var studentExam = await _context.StudentExams
+                .FirstOrDefaultAsync(se => se.ExamId == id && se.StudentId == studentId);
+
+            return Ok(new {
+                exam.Id,
+                exam.Title,
+                exam.Description,
+                exam.DurationMinutes,
+                exam.TotalMarks,
+                exam.PassingScore,
+                exam.StartDate,
+                exam.EndDate,
+                exam.IsPublished,
+                CourseName = exam.Course.CourseName,
+                TeacherName = exam.Course.Teacher.FullName,
+                IsStarted = studentExam != null,
+                Status = studentExam?.Status,
+                StartTime = studentExam?.StartTime
+            });
+        }
+
         [HttpGet("exams/{id}/questions")]
         public async Task<IActionResult> GetExamQuestions(int id)
         {
@@ -301,6 +347,7 @@ namespace ExamSystem.Controllers
                     q.OptionD,
                     q.Marks,
                     q.QuestionOrder,
+                    q.CorrectAnswer,
                     SelectedAnswer = _context.StudentAnswers
                         .Where(sa => sa.StudentExamId == studentExam.Id && sa.QuestionId == q.Id)
                         .Select(sa => sa.SelectedAnswer)
@@ -366,18 +413,61 @@ namespace ExamSystem.Controllers
         }
 
         [HttpPost("exams/{id}/submit")]
-        public async Task<IActionResult> SubmitExam(int id)
+        public async Task<IActionResult> SubmitExam(int id, [FromBody] SubmitExamModel examSubmission)
         {
             var studentId = GetStudentId();
 
             var studentExam = await _context.StudentExams
                 .Include(se => se.StudentAnswers)
                 .ThenInclude(sa => sa.Question)
+                .Include(se => se.Exam)
                 .FirstOrDefaultAsync(se => se.ExamId == id && se.StudentId == studentId && se.Status == "Started");
 
             if (studentExam == null)
             {
                 return BadRequest(new { message = "You have not started this exam" });
+            }
+
+            // Save any remaining answers from the submission
+            if (examSubmission?.Answers != null)
+            {
+                foreach (var answer in examSubmission.Answers)
+                {
+                    var questionId = studentExam.Exam.Questions
+                        .OrderBy(q => q.QuestionOrder)
+                        .Skip(answer.Key)
+                        .FirstOrDefault()?.Id;
+
+                    if (questionId.HasValue)
+                    {
+                        var question = await _context.Questions.FindAsync(questionId.Value);
+                        if (question != null)
+                        {
+                            var existingAnswer = await _context.StudentAnswers
+                                .FirstOrDefaultAsync(sa => sa.StudentExamId == studentExam.Id && sa.QuestionId == questionId.Value);
+
+                            if (existingAnswer != null)
+                            {
+                                existingAnswer.SelectedAnswer = GetAnswerLetter(answer.Value);
+                                existingAnswer.IsCorrect = existingAnswer.SelectedAnswer == question.CorrectAnswer;
+                                existingAnswer.AnswerTime = DateTime.Now;
+                            }
+                            else
+                            {
+                                var studentAnswer = new StudentAnswer
+                                {
+                                    StudentExamId = studentExam.Id,
+                                    QuestionId = questionId.Value,
+                                    SelectedAnswer = GetAnswerLetter(answer.Value),
+                                    IsCorrect = GetAnswerLetter(answer.Value) == question.CorrectAnswer,
+                                    AnswerTime = DateTime.Now
+                                };
+                                _context.StudentAnswers.Add(studentAnswer);
+                            }
+                        }
+                    }
+                }
+                await _context.SaveChangesAsync();
             }
 
             // Calculate score
@@ -392,7 +482,24 @@ namespace ExamSystem.Controllers
 
             await _context.SaveChangesAsync();
 
-            return Ok(new { score = totalScore, totalMarks = studentExam.Exam.TotalMarks, passed = totalScore >= studentExam.Exam.PassingScore });
+            return Ok(new { 
+                score = totalScore, 
+                totalMarks = studentExam.Exam.TotalMarks, 
+                passed = totalScore >= studentExam.Exam.PassingScore,
+                percentage = studentExam.Exam.TotalMarks > 0 ? (totalScore * 100.0 / studentExam.Exam.TotalMarks) : 0
+            });
+        }
+
+        private string GetAnswerLetter(int answerIndex)
+        {
+            return answerIndex switch
+            {
+                0 => "A",
+                1 => "B", 
+                2 => "C",
+                3 => "D",
+                _ => "A"
+            };
         }
 
         [HttpGet("exams/{id}/result")]
@@ -477,5 +584,16 @@ namespace ExamSystem.Controllers
     {
         public int QuestionId { get; set; }
         public string SelectedAnswer { get; set; }
+    }
+
+    public class SubmitExamModel
+    {
+        public Dictionary<int, int> Answers { get; set; }
+        public int Score { get; set; }
+        public int TotalScore { get; set; }
+        public double Percentage { get; set; }
+        public bool Passed { get; set; }
+        public double TimeTaken { get; set; }
+        public DateTime SubmittedAt { get; set; }
     }
 }

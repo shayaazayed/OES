@@ -127,6 +127,16 @@
             </div>
         </div>
 
+        <!-- Enrolled Courses -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">دوراتي المسجلة</h2>
+            </div>
+            <div id="enrolledCoursesList" style="max-height: 400px; overflow-y: auto;">
+                <!-- Enrolled courses will be loaded here -->
+            </div>
+        </div>
+
         <!-- Recent Results -->
         <div class="card">
             <div class="card-header">
@@ -202,6 +212,12 @@
                     
                     const availableExams = await api.getStudentAvailableExams();
                     console.log('✅ Available exams loaded:', availableExams);
+                    
+                    // Debug: Log first exam structure
+                    if (availableExams.length > 0) {
+                        console.log('🔍 First exam structure:', availableExams[0]);
+                        console.log('🔍 Available fields:', Object.keys(availableExams[0]));
+                    }
 
                     // Update available exams count
                     document.getElementById('availableExamsCount').textContent = availableExams.length;
@@ -212,14 +228,14 @@
                                 <i class="fas fa-clipboard-list" style="color: white; font-size: 1rem;"></i>
                             </div>
                             <div style="flex: 1;">
-                                <h4 style="margin: 0; font-size: 1rem; color: var(--gray-800);">${exam.Title}</h4>
-                                <p style="margin: 0.25rem 0; color: var(--gray-600); font-size: 0.9rem;">${exam.CourseName}</p>
+                                <h4 style="margin: 0; font-size: 1rem; color: var(--gray-800);">${exam.Title || exam.title || 'اختبار بدون اسم'}</h4>
+                                <p style="margin: 0.25rem 0; color: var(--gray-600); font-size: 0.9rem;">${exam.CourseName || exam.courseName || 'دورة'}</p>
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
                                     <span style="color: var(--gray-500); font-size: 0.8rem;">
-                                        <i class="fas fa-clock"></i> ${exam.DurationMinutes} دقيقة • ${exam.QuestionCount} سؤال
+                                        <i class="fas fa-clock"></i> ${exam.DurationMinutes || exam.durationMinutes || 0} دقيقة • ${exam.QuestionCount || exam.questionCount || 0} سؤال
                                     </span>
-                                    <button class="btn btn-primary btn-sm" onclick="startExam(${exam.Id})" ${exam.IsTaken ? 'disabled' : ''}>
-                                        ${exam.IsTaken ? 'تم أداؤه' : 'بدء الاختبار'}
+                                    <button class="btn btn-primary btn-sm" onclick="startExam(${exam.Id || exam.id})" ${exam.IsTaken || exam.isTaken ? 'disabled' : ''}>
+                                        ${exam.IsTaken || exam.isTaken ? 'تم أداؤه' : 'بدء الاختبار'}
                                     </button>
                                 </div>
                             </div>
@@ -275,14 +291,40 @@
                     document.getElementById('recentResults').innerHTML = '<p style="text-align: center; color: var(--danger); padding: 2rem;">فشل في تحميل النتائج السابقة</p>';
                 }
 
-                // Load enrolled courses count (derived from available exams)
+                // Load enrolled courses count using actual enrollment data
                 try {
-                    const availableExams = await api.getStudentAvailableExams();
-                    const uniqueCourses = [...new Set(availableExams.map(exam => exam.CourseId))];
-                    document.getElementById('enrolledCourses').textContent = uniqueCourses.length;
+                    console.log('📚 Loading enrolled courses count...');
+                    const enrollmentStatus = await api.checkEnrollmentStatus();
+                    console.log('✅ Enrollment status loaded:', enrollmentStatus);
+                    
+                    // Use the actual enrolled courses count from the API
+                    const enrolledCount = enrollmentStatus.enrolledCoursesCount || enrollmentStatus.EnrolledCoursesCount || 0;
+                    document.getElementById('enrolledCourses').textContent = enrolledCount;
+                    
+                    console.log(`📊 Enrolled courses count: ${enrolledCount}`);
+                    
+                    // Display enrolled courses
+                    const enrolledCourses = enrollmentStatus.enrolledCourses || [];
+                    const enrolledCoursesHtml = enrolledCourses.map(course => `
+                        <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; border-bottom: 1px solid var(--gray-100); hover: background: var(--gray-50);">
+                            <div style="width: 40px; height: 40px; background: var(--success); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-graduation-cap" style="color: white; font-size: 1rem;"></i>
+                            </div>
+                            <div style="flex: 1;">
+                                <h4 style="margin: 0; font-size: 1rem; color: var(--gray-800);">${course.courseName || course.CourseName}</h4>
+                                <p style="margin: 0.25rem 0; color: var(--gray-600); font-size: 0.9rem;">تاريخ التسجيل: ${formatDate(course.enrolledDate || course.EnrolledDate)}</p>
+                            </div>
+                            <button class="btn btn-primary btn-sm" onclick="window.location.href='courses.html'">
+                                عرض التفاصيل
+                            </button>
+                        </div>
+                    `).join('');
+                    
+                    document.getElementById('enrolledCoursesList').innerHTML = enrolledCoursesHtml || '<p style="text-align: center; color: var(--gray-500); padding: 2rem;">لم يتم التسجيل في أي دورة بعد</p>';
                 } catch (error) {
                     console.error('❌ Failed to load enrolled courses:', error);
                     document.getElementById('enrolledCourses').textContent = '0';
+                    document.getElementById('enrolledCoursesList').innerHTML = '<p style="text-align: center; color: var(--danger); padding: 2rem;">فشل في تحميل الدورات المسجلة</p>';
                 }
 
             } catch (error) {
