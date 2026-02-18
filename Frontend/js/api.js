@@ -250,6 +250,13 @@ class ApiService {
         });
     }
 
+    async publishExam(id) {
+        // 🎯 ENDPOINT: /teacher/exams/{id}/publish (Teacher controller)
+        return await this.request(`/teacher/exams/${id}/publish`, {
+            method: 'POST'
+        });
+    }
+
     // ==========================================
     // STATISTICS ENDPOINTS
     // ==========================================

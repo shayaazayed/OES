@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة الطلاب - ExamPro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header
+            style="background: white; padding: 1rem 0; border-radius: 16px; margin-bottom: 2rem; box-shadow: var(--shadow-lg);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <button class="btn btn-secondary" onclick="window.location.href='dashboard.html'">
+                        <i class="fas fa-arrow-right"></i>
+                        العودة للرئيسية
+                    </button>
+                    <div>
+                        <h1 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-800); margin: 0;">الطلاب
+                            المسجلين</h1>
+                        <p style="color: var(--gray-600); margin: 0; font-size: 0.9rem;">عرض جميع الطلاب المسجلين في
+                            دوراتك</p>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Students List -->
+        <div class="card">
+            <div id="studentsList">
+                <div style="text-align: center; padding: 2rem; color: var(--gray-600);">جاري تحميل الطلاب...</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script>
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!checkAuth() || !api.isTeacher()) {
+                window.location.href = '../login.html';
+                return;
+            }
+            await loadStudents();
+        });
+
+        // Check auth
+        function checkAuth() {
+            const token = localStorage.getItem('token');
+            return !!token;
+        }
+
+        // Load students
+        async function loadStudents() {
+            try {
+                const response = await fetch(`${api.baseURL}/teacher/students`, {
+                    headers: { 'Authorization': `Bearer ${api.token}` }
+                });
+
+                if (response.ok) {
+                    const students = await response.json();
+                    displayStudents(students);
+                } else {
+                    document.getElementById('studentsList').innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--danger);">فشل تحميل بيانات الطلاب</div>';
+                }
+            } catch (error) {
+                console.error('Error loading students:', error);
+                document.getElementById('studentsList').innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--danger);">حدث خطأ أثناء تحميل البيانات</div>';
+            }
+        }
+
+        function displayStudents(students) {
+            const container = document.getElementById('studentsList');
+            if (!students || students.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--gray-600);">لا يوجد طلاب مسجلين حتى الآن.</div>';
+                return;
+            }
+
+            // Group by course? Or just list table? 
+            // A table is better for density.
+            const tableHtml = `
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: var(--gray-50); border-bottom: 2px solid var(--gray-200);">
+                            <th style="text-align: right; padding: 1rem;">الطالب</th>
+                            <th style="text-align: right; padding: 1rem;">البريد الإلكتروني</th>
+                            <th style="text-align: right; padding: 1rem;">الدورة المسجلة</th>
+                            <th style="text-align: right; padding: 1rem;">تاريخ التسجيل</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${students.map((student, index) => {
+                const name = student.StudentName || student.studentName || 'غير معروف';
+                const email = student.Email || student.email || '-';
+                const course = student.CourseName || student.courseName || '-';
+                const date = new Date(student.EnrollmentDate || student.enrollmentDate).toLocaleDateString('ar-SA');
+
+                return `
+                                <tr style="border-bottom: 1px solid var(--gray-100);">
+                                    <td style="padding: 1rem; font-weight: 600;">${name}</td>
+                                    <td style="padding: 1rem; color: var(--gray-600);">${email}</td>
+                                    <td style="padding: 1rem;"><span style="background: var(--primary-light); color: var(--primary); padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.9rem;">${course}</span></td>
+                                    <td style="padding: 1rem; color: var(--gray-500);">${date}</td>
+                                </tr>
+                            `;
+            }).join('')}
+                    </tbody>
+                </table>
+            `;
+            container.innerHTML = tableHtml;
+        }
+    </script>
+</body>
+
+</html>

@@ -112,7 +112,7 @@
                     <i class="fas fa-chart-bar"></i>
                     عرض النتائج
                 </button>
-                <button class="btn btn-secondary" onclick="manageStudents()">
+                <button class="btn btn-secondary" onclick="window.location.href='students.html'">
                     <i class="fas fa-users"></i>
                     إدارة الطلاب
                 </button>
@@ -172,23 +172,32 @@
                 console.log('📊 Teacher exams:', exams);
 
                 if (exams && exams.length > 0) {
-                    const examsHtml = exams.map(exam => `
-                        <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; border-bottom: 1px solid var(--gray-100); hover: background: var(--gray-50); cursor: pointer;" onclick="viewExamDetails(${exam.Id})">
-                            <div style="width: 40px; height: 40px; background: ${exam.IsPublished ? 'var(--success)' : 'var(--warning)'}; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    const examsHtml = exams.map(exam => {
+                        const id = exam.Id || exam.id;
+                        const title = exam.Title || exam.title || 'بدون عنوان'; // Fallback for Title
+                        const courseName = exam.CourseName || exam.courseName || 'دورة غير محددة'; // Fallback for CourseName
+                        const startDate = exam.StartDate || exam.startDate; // Date might be processed by formatDate
+                        const isPublished = exam.IsPublished !== undefined ? exam.IsPublished : exam.isPublished;
+                        const studentCount = exam.StudentCount || exam.studentCount || 0;
+
+                        return `
+                        <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; border-bottom: 1px solid var(--gray-100); hover: background: var(--gray-50); cursor: pointer;" onclick="viewExamDetails(${id})">
+                            <div style="width: 40px; height: 40px; background: ${isPublished ? 'var(--success)' : 'var(--warning)'}; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
                                 <i class="fas fa-clipboard-list" style="color: white; font-size: 1rem;"></i>
                             </div>
                             <div style="flex: 1;">
-                                <h4 style="margin: 0; font-size: 1rem; color: var(--gray-800);">${exam.Title}</h4>
-                                <p style="margin: 0.25rem 0; color: var(--gray-600); font-size: 0.9rem;">${exam.CourseName || 'دورة غير محددة'}</p>
+                                <h4 style="margin: 0; font-size: 1rem; color: var(--gray-800);">${title}</h4>
+                                <p style="margin: 0.25rem 0; color: var(--gray-600); font-size: 0.9rem;">${courseName}</p>
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                                    <span style="color: var(--gray-500); font-size: 0.8rem;">${formatDate(exam.StartDate)}</span>
-                                    <span style="color: ${exam.IsPublished ? 'var(--success)' : 'var(--warning)'}; font-size: 0.8rem; font-weight: 600;">
-                                        ${exam.IsPublished ? 'منشور' : 'مسود'} • ${exam.StudentCount || 0} طالب
+                                    <span style="color: var(--gray-500); font-size: 0.8rem;">${formatDate(startDate)}</span>
+                                    <span style="color: ${isPublished ? 'var(--success)' : 'var(--warning)'}; font-size: 0.8rem; font-weight: 600;">
+                                        ${isPublished ? 'منشور' : 'مسود'} • ${studentCount} طالب
                                     </span>
                                 </div>
                             </div>
                         </div>
-                    `).join('');
+                    `;
+                    }).join('');
 
                     document.getElementById('recentExams').innerHTML = examsHtml;
                 } else {
@@ -264,8 +273,7 @@
         // View exam details
         function viewExamDetails(examId) {
             console.log('📋 Viewing exam details for ID:', examId);
-            showAlert(`جاري فتح تفاصيل الاختبار ${examId}...`, 'info');
-            // TODO: Navigate to exam details page
+            window.location.href = `exam-details.html?id=${examId}`;
         }
 
         // Format date
@@ -290,13 +298,11 @@
         function manageCourses() {
             console.log('📚 Managing courses...');
             // Show teacher's courses
-            window.location.href = '../admin/courses.html';
+            window.location.href = 'courses.html';
         }
 
         function viewResults() {
-            console.log('📊 Viewing results...');
-            // Show results page
-            showAlert('صفحة النتائج قيد التطوير', 'info');
+            window.location.href = 'results.html';
         }
 
         function manageStudents() {
@@ -448,9 +454,14 @@
                 if (response.ok) {
                     const result = await response.json();
                     console.log('✅ Exam created successfully:', result);
-                    showAlert('تم إنشاء الاختبار بنجاح!', 'success');
+                    showAlert('تم إنشاء الاختبار بنجاح! جاري تحويلك لإضافة الأسئلة...', 'success');
                     hideCreateExamModal();
-                    loadDashboardData(); // Reload dashboard
+
+                    // Redirect to exam details page to add questions
+                    setTimeout(() => {
+                        const examId = result.Id || result.id;
+                        window.location.href = `exam-details.html?id=${examId}`;
+                    }, 1500);
                 } else {
                     const errorText = await response.text();
                     console.log('❌ Failed to create exam:', errorText);

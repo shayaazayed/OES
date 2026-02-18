@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تفاصيل الاختبار - ExamPro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header
+            style="background: white; padding: 1rem 0; border-radius: 16px; margin-bottom: 2rem; box-shadow: var(--shadow-lg);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <button class="btn btn-secondary" onclick="window.location.href='dashboard.html'">
+                        <i class="fas fa-arrow-right"></i>
+                        رجوع
+                    </button>
+                    <div>
+                        <h1 id="pageTitle"
+                            style="font-size: 1.5rem; font-weight: 700; color: var(--gray-800); margin: 0;">تفاصيل
+                            الاختبار</h1>
+                        <p id="pageSubtitle" style="color: var(--gray-600); margin: 0; font-size: 0.9rem;">جاري
+                            التحميل...</p>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <button id="publishBtn" class="btn btn-success" onclick="togglePublish()" style="display: none;">
+                        <i class="fas fa-upload"></i>
+                        <span id="publishBtnText">نشر الاختبار</span>
+                    </button>
+                    <button class="btn btn-danger" onclick="deleteExam()">
+                        <i class="fas fa-trash"></i>
+                        حذف الاختبار
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <div style="display: grid; grid-template-columns: 350px 1fr; gap: 2rem; align-items: start;">
+            <!-- Exam Info Sidebar -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">معلومات الاختبار</h2>
+                </div>
+                <form id="editExamForm">
+                    <div style="margin-bottom: 1rem;">
+                        <label class="form-label">عنوان الاختبار</label>
+                        <input type="text" id="examTitle" class="form-control" required>
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <label class="form-label">مدة الاختبار (دقائق)</label>
+                        <input type="number" id="examDuration" class="form-control" required>
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <label class="form-label">الدرجة الكلية</label>
+                        <input type="number" id="totalMarks" class="form-control" readonly
+                            style="background: var(--gray-100);">
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <label class="form-label">درجة النجاح</label>
+                        <input type="number" id="passingScore" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        <i class="fas fa-save"></i>
+                        حفظ التعديلات
+                    </button>
+                </form>
+            </div>
+
+            <!-- Questions Section -->
+            <div class="card">
+                <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                    <h2 class="card-title">الأسئلة</h2>
+                    <button class="btn btn-primary" onclick="showAddQuestionModal()">
+                        <i class="fas fa-plus"></i>
+                        إضافة سؤال
+                    </button>
+                </div>
+                <div id="questionsList">
+                    <!-- Questions will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Question Modal -->
+    <div id="addQuestionModal"
+        style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;">
+        <div
+            style="background: white; padding: 2rem; border-radius: 16px; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto;">
+            <h2 id="questionModalTitle" style="margin-top: 0; color: var(--gray-800);">إضافة سؤال جديد</h2>
+            <form id="questionForm">
+                <div style="margin-bottom: 1rem;">
+                    <label class="form-label">نص السؤال</label>
+                    <textarea id="questionText" class="form-control" rows="3" required></textarea>
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <label class="form-label">الدرجة</label>
+                    <input type="number" id="questionMarks" class="form-control" value="1" min="1" required>
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <label class="form-label">نوع السؤال</label>
+                    <select id="questionType" class="form-control" onchange="toggleQuestionType()">
+                        <option value="MultipleChoice">اختيار من متعدد</option>
+                        <option value="TrueFalse">صح أو خطأ</option>
+                    </select>
+                </div>
+
+                <!-- Options Section -->
+                <div id="optionsSection">
+                    <label class="form-label">الخيارات (حدد الإجابة الصحيحة)</label>
+                    <div id="optionsContainer">
+                        <!-- Options will be generated here -->
+                    </div>
+
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem;">
+                    <button type="button" class="btn btn-secondary" onclick="hideAddQuestionModal()">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">حفظ السؤال</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script>
+        // Global variables
+        const urlParams = new URLSearchParams(window.location.search);
+        const examId = urlParams.get('id');
+        let currentExam = null;
+        let isEditingQuestion = false;
+        let currentQuestionId = null;
+
+        // Check auth and load data
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!checkAuth() || !api.isTeacher()) {
+                window.location.href = '../login.html';
+                return;
+            }
+
+            if (!examId) {
+                showAlert('رقم الاختبار غير موجود', 'danger');
+                setTimeout(() => window.location.href = 'dashboard.html', 2000);
+                return;
+            }
+
+            await loadExamDetails();
+            await loadQuestions();
+        });
+
+        // Load Exam Details
+        async function loadExamDetails() {
+            try {
+                // Fetch exam details (assuming endpoint exists or using getTeacherExams and filtering)
+                // Since we don't have a direct "getExamById" for teacher usually, we might need to rely on the teacher exams list
+                // OR implement a specific endpoint. Let's try fetching all teacher exams and finding this one first.
+                const exams = await api.getTeacherExams();
+                currentExam = exams.find(e => e.Id == examId);
+
+                if (!currentExam) {
+                    throw new Error('الاختبار غير موجود');
+                }
+
+                document.getElementById('pageSubtitle').textContent = currentExam.CourseName;
+                document.getElementById('examTitle').value = currentExam.Title;
+                document.getElementById('examDuration').value = currentExam.DurationMinutes;
+                document.getElementById('totalMarks').value = currentExam.TotalMarks;
+                document.getElementById('passingScore').value = currentExam.PassingScore;
+
+                updatePublishButton();
+
+            } catch (error) {
+                console.error('Error loading exam:', error);
+                showAlert('فشل تحميل تفاصيل الاختبار', 'danger');
+            }
+        }
+
+        // Load Questions
+        async function loadQuestions() {
+            try {
+                const response = await fetch(`${api.baseURL}/teacher/exams/${examId}/questions`, {
+                    headers: { 'Authorization': `Bearer ${api.token}` }
+                });
+
+                if (response.ok) {
+                    const questions = await response.json();
+                    displayQuestions(questions);
+                } else {
+                    console.warn('Failed to load questions');
+                    document.getElementById('questionsList').innerHTML = '<p class="text-center">فشل تحميل الأسئلة</p>';
+                }
+            } catch (error) {
+                console.error('Error loading questions:', error);
+                document.getElementById('questionsList').innerHTML = '<p class="text-center">فشل تحميل الأسئلة</p>';
+            }
+        }
+
+        function displayQuestions(questions) {
+            const container = document.getElementById('questionsList');
+            if (!questions || questions.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--gray-600);">لا توجد أسئلة بعد. قم بإضافة سؤال جديد.</div>';
+                return;
+            }
+
+            container.innerHTML = questions.map((q, index) => {
+                const id = q.Id || q.id;
+                const text = q.QuestionText || q.questionText || '';
+                const marks = q.Marks || q.marks || 0;
+                const order = q.QuestionOrder || q.questionOrder || index + 1;
+                const ca = q.CorrectAnswer || q.correctAnswer;
+                const optA = q.OptionA || q.optionA || '-';
+                const optB = q.OptionB || q.optionB || '-';
+                const optC = q.OptionC || q.optionC || '-';
+                const optD = q.OptionD || q.optionD || '-';
+
+                return `
+                <div style="background: var(--gray-50); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border: 1px solid var(--gray-200);">
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <div>
+                            <span style="font-weight: bold; color: var(--primary);">سؤال ${order}:</span>
+                            <span style="margin-right: 0.5rem;">${text}</span>
+                            <div style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--gray-600);">
+                                الدرجة: ${marks}
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <!-- <button class="btn btn-warning btn-sm" onclick="editQuestion(${id})"><i class="fas fa-edit"></i></button> -->
+                            <button class="btn btn-danger btn-sm" onclick="deleteQuestion(${id})"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                    <ul style="margin-top: 1rem; padding-right: 1.5rem; list-style-type: none;">
+                        <li style="${ca === 'A' ? 'color: var(--success); font-weight: bold;' : ''}">A: ${optA} ${ca === 'A' ? '✔' : ''}</li>
+                        <li style="${ca === 'B' ? 'color: var(--success); font-weight: bold;' : ''}">B: ${optB} ${ca === 'B' ? '✔' : ''}</li>
+                        <li style="${ca === 'C' ? 'color: var(--success); font-weight: bold;' : ''}">C: ${optC} ${ca === 'C' ? '✔' : ''}</li>
+                        <li style="${ca === 'D' ? 'color: var(--success); font-weight: bold;' : ''}">D: ${optD} ${ca === 'D' ? '✔' : ''}</li>
+                    </ul>
+                </div>
+            `;
+            }).join('');
+        }
+
+        // Modal Functions
+        function showAddQuestionModal() {
+            isEditingQuestion = false;
+            currentQuestionId = null;
+            document.getElementById('questionModalTitle').textContent = 'إضافة سؤال جديد';
+            document.getElementById('questionForm').reset();
+            document.getElementById('questionType').value = 'MultipleChoice'; // Default
+            toggleQuestionType(); // Initialize options
+            document.getElementById('addQuestionModal').style.display = 'flex';
+        }
+
+        function hideAddQuestionModal() {
+            document.getElementById('addQuestionModal').style.display = 'none';
+        }
+
+        function toggleQuestionType() {
+            const type = document.getElementById('questionType').value;
+            const container = document.getElementById('optionsContainer');
+            container.innerHTML = '';
+
+            if (type === 'TrueFalse') {
+                container.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
+                        <input type="radio" name="correctOption" value="A" required>
+                        <span>صح</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
+                        <input type="radio" name="correctOption" value="B" required>
+                        <span>خطأ</span>
+                    </div>
+                `;
+                document.querySelector('#optionsSection button').style.display = 'none';
+            } else {
+                ['A', 'B', 'C', 'D'].forEach(opt => {
+                    container.innerHTML += `
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                            <input type="radio" name="correctOption" value="${opt}" required>
+                            <span style="font-weight: bold; width: 20px;">${opt}:</span>
+                            <input type="text" id="option${opt}" class="form-control" placeholder="الخيار ${opt}" required>
+                        </div>
+                    `;
+                });
+                document.querySelector('#optionsSection button').style.display = 'none';
+            }
+        }
+
+        // Handle Question Form Submit
+        document.getElementById('questionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const questionText = document.getElementById('questionText').value;
+            const marks = parseInt(document.getElementById('questionMarks').value);
+            const type = document.getElementById('questionType').value;
+            const correctRadio = document.querySelector('input[name="correctOption"]:checked');
+
+            if (!correctRadio) {
+                showAlert('يرجى تحديد الإجابة الصحيحة', 'warning');
+                return;
+            }
+
+            const correctAnswer = correctRadio.value;
+            let optionA, optionB, optionC, optionD;
+
+            if (type === 'TrueFalse') {
+                optionA = "صح";
+                optionB = "خطأ";
+                optionC = "-";
+                optionD = "-";
+            } else {
+                optionA = document.getElementById('optionA').value;
+                optionB = document.getElementById('optionB').value;
+                optionC = document.getElementById('optionC').value;
+                optionD = document.getElementById('optionD').value;
+            }
+
+            const payload = {
+                QuestionText: questionText,
+                OptionA: optionA,
+                OptionB: optionB,
+                OptionC: optionC,
+                OptionD: optionD,
+                CorrectAnswer: correctAnswer,
+                Marks: marks
+            };
+
+            try {
+                const response = await fetch(`${api.baseURL}/teacher/exams/${examId}/questions`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${api.token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    showAlert('تم إضافة السؤال بنجاح', 'success');
+                    hideAddQuestionModal();
+                    loadQuestions();
+                } else {
+                    const error = await response.text();
+                    try {
+                        const jsonDate = JSON.parse(error);
+                        showAlert('فشل إضافة السؤال: ' + (jsonDate.message || error), 'danger');
+                    } catch (e) {
+                        showAlert('فشل إضافة السؤال: ' + error, 'danger');
+                    }
+                }
+            } catch (error) {
+                console.error(error);
+                showAlert('حدث خطأ أثناء الإضافة', 'danger');
+            }
+        });
+
+        // Handle Exam Info Edit
+        document.getElementById('editExamForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const title = document.getElementById('examTitle').value;
+            const duration = parseInt(document.getElementById('examDuration').value);
+            const passingScore = parseInt(document.getElementById('passingScore').value);
+
+            const payload = {
+                Title: title,
+                Description: currentExam.Description || '',
+                DurationMinutes: duration,
+                TotalMarks: currentExam.TotalMarks,
+                PassingScore: passingScore,
+                StartDate: currentExam.StartDate,
+                EndDate: currentExam.EndDate
+            };
+
+            try {
+                await api.request(`/teacher/exams/${examId}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(payload)
+                });
+
+                showAlert('تم تحديث معلومات الاختبار بنجاح', 'success');
+                // Update local state
+                currentExam.Title = title;
+                currentExam.DurationMinutes = duration;
+                currentExam.PassingScore = passingScore;
+
+            } catch (error) {
+                console.error('Error updating exam:', error);
+                showAlert('فشل تحديث المعلومات: ' + error.message, 'danger');
+            }
+        });
+
+        // Delete Question
+        async function deleteQuestion(id) {
+            if (!confirm('هل أنت متأكد من حذف هذا السؤال؟')) return;
+
+            try {
+                const response = await fetch(`${api.baseURL}/teacher/questions/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${api.token}` }
+                });
+
+                if (response.ok) {
+                    showAlert('تم حذف السؤال', 'success');
+                    loadQuestions();
+                } else {
+                    showAlert('فشل حذف السؤال', 'danger');
+                }
+            } catch (error) {
+                console.error(error);
+                showAlert('حدث خطأ', 'danger');
+            }
+        }
+
+        // Toggle Publish
+        async function togglePublish() {
+            if (currentExam.IsPublished) {
+                showAlert('لا يمكن إلغاء النشر حالياً (غير مدعوم من الخادم)', 'warning');
+                return;
+            }
+
+            if (!confirm('هل أنت متأكد من نشر هذا الاختبار؟ سيظهر للطلاب فوراً.')) return;
+
+            try {
+                await api.publishExam(examId);
+                showAlert('تم نشر الاختبار بنجاح', 'success');
+                currentExam.IsPublished = true;
+                updatePublishButton();
+            } catch (error) {
+                console.error('Error publishing exam:', error);
+                showAlert('فشل نشر الاختبار: ' + error.message, 'danger');
+            }
+        }
+
+        function updatePublishButton() {
+            const btn = document.getElementById('publishBtn');
+            const btnText = document.getElementById('publishBtnText');
+            btn.style.display = 'inline-flex';
+            if (currentExam.IsPublished) {
+                btn.className = 'btn btn-warning';
+                btnText.textContent = 'إلغاء النشر';
+            } else {
+                btn.className = 'btn btn-success';
+                btnText.textContent = 'نشر الاختبار';
+            }
+        }
+
+        // Delete Exam
+        async function deleteExam() {
+            if (confirm('هل أنت متأكد من حذف هذا الاختبار؟ هذا الإجراء لا يمكن التراجع عنه.')) {
+                try {
+                    await api.request(`/teacher/exams/${examId}`, { method: 'DELETE' });
+                    showAlert('تم حذف الاختبار بنجاح', 'success');
+                    setTimeout(() => window.location.href = 'dashboard.html', 1500);
+                } catch (error) {
+                    console.error('Error deleting exam:', error);
+                    showAlert('فشل حذف الاختبار: ' + error.message, 'danger');
+                }
+            }
+        }
+
+        function checkAuth() {
+            const token = localStorage.getItem('token');
+            return !!token;
+        }
+
+        function showAlert(message, type = 'info') {
+            const alertDiv = document.createElement('div');
+            alertDiv.style.cssText = `
+                position: fixed; top: 20px; right: 20px; padding: 1rem 1.5rem; border-radius: 8px; color: white; font-weight: 600; z-index: 9999;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                background: ${type === 'success' ? '#10b981' : type === 'danger' ? '#ef4444' : '#3b82f6'};
+            `;
+            alertDiv.textContent = message;
+            document.body.appendChild(alertDiv);
+            setTimeout(() => alertDiv.remove(), 3000);
+        }
+    </script>
+</body>
+
+</html>

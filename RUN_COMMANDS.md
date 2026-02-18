@@ -41,3 +41,5 @@ npx serve -l 3000
 **ملاحظات:**
 - تأكد من بقاء نوافذ التيرمنال مفتوحة أثناء استخدام التطبيق.
 - في حال واجهت مشاكل في الاتصال بقاعدة البيانات، تأكد من صحة البيانات في ملف `Backend/appsettings.json`.
+taskkill /F /IM ExamSystem.exe /T
+taskkill /F /IM node.exe /T

@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Security.Claims;
 
 namespace ExamSystem.Controllers
 {
@@ -22,13 +23,23 @@ namespace ExamSystem.Controllers
             _context = context;
         }
 
+        private int GetUserId()
+        {
+            return int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+        }
+
+        private string GetUserRole()
+        {
+            return User.FindFirst(ClaimTypes.Role)?.Value ?? "";
+        }
+
         [HttpGet("exams")]
         public async Task<IActionResult> GetMyExams()
         {
             try
             {
-                var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value);
-                var userType = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+                var userId = GetUserId();
+                var userType = GetUserRole();
 
                 Console.WriteLine($"📋 Getting exams for user: {userId}, type: {userType}");
 
@@ -73,8 +84,8 @@ namespace ExamSystem.Controllers
         {
             try
             {
-                var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value);
-                var userType = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+                var userId = GetUserId();
+                var userType = GetUserRole();
 
                 Console.WriteLine($"📚 Getting courses for user: {userId}, type: {userType}");
 
@@ -105,12 +116,80 @@ namespace ExamSystem.Controllers
             }
         }
 
+        [HttpGet("students")]
+        public async Task<IActionResult> GetMyStudents()
+        {
+            try
+            {
+                var userId = GetUserId();
+                
+                // Get students enrolled in courses taught by this teacher
+                var students = await _context.Enrollments
+                    .Include(e => e.Course)
+                    .Include(e => e.Student)
+                    .Where(e => e.Course.TeacherId == userId)
+                    .Select(e => new
+                    {
+                        StudentId = e.StudentId,
+                        StudentName = e.Student.FullName,
+                        Email = e.Student.Email,
+                        CourseName = e.Course.CourseName,
+                        EnrollmentDate = e.EnrolledDate
+                    })
+                    .OrderBy(s => s.CourseName)
+                    .ThenBy(s => s.StudentName)
+                    .ToListAsync();
+                
+                return Ok(students);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error fetching students", error = ex.Message });
+            }
+        }
+
+        [HttpGet("results")]
+        public async Task<IActionResult> GetExamResults()
+        {
+            try
+            {
+                var userId = GetUserId();
+                
+                // Get exam results for exams created by this teacher
+                var results = await _context.StudentExams
+                    .Include(se => se.Exam)
+                    .ThenInclude(e => e.Course)
+                    .Include(se => se.Student)
+                    .Where(se => se.Exam.TeacherId == userId) // Filter by teacher's exams
+                    .Select(se => new
+                    {
+                        se.Id,
+                        ExamTitle = se.Exam.Title,
+                        CourseName = se.Exam.Course.CourseName,
+                        StudentName = se.Student.FullName,
+                        se.Score,
+                        TotalMarks = se.Exam.TotalMarks,
+                        se.Status, // E.g., "Pass", "Fail", "Pending"
+                        CompletedDate = se.SubmittedTime,
+                        IsPassed = se.Score >= se.Exam.PassingScore
+                    })
+                    .OrderByDescending(r => r.CompletedDate)
+                    .ToListAsync();
+                
+                return Ok(results);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error fetching results", error = ex.Message });
+            }
+        }
+
         [HttpPost("exams")]
         public async Task<IActionResult> CreateExam([FromBody] CreateExamModel model)
         {
             try
             {
-                var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value);
+                var userId = GetUserId();
 
                 Console.WriteLine($"📝 Creating exam for user: {userId}");
 
@@ -147,8 +226,8 @@ namespace ExamSystem.Controllers
         [HttpPut("exams/{id}")]
         public async Task<IActionResult> UpdateExam(int id, [FromBody] UpdateExamModel model)
         {
-            var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value);
-            var userType = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+            var userId = GetUserId();
+            var userType = GetUserRole();
 
             var exam = await _context.Exams.FindAsync(id);
             if (exam == null)
@@ -184,8 +263,8 @@ namespace ExamSystem.Controllers
         [HttpDelete("exams/{id}")]
         public async Task<IActionResult> DeleteExam(int id)
         {
-            var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value);
-            var userType = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+            var userId = GetUserId();
+            var userType = GetUserRole();
 
             var exam = await _context.Exams.FindAsync(id);
             if (exam == null)
@@ -214,8 +293,8 @@ namespace ExamSystem.Controllers
         [HttpGet("exams/{id}/results")]
         public async Task<IActionResult> GetExamResults(int id)
         {
-            var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value);
-            var userType = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+            var userId = GetUserId();
+            var userType = GetUserRole();
 
             var exam = await _context.Exams.FindAsync(id);
             if (exam == null)
@@ -253,8 +332,8 @@ namespace ExamSystem.Controllers
         [HttpGet("courses/{id}/students")]
         public async Task<IActionResult> GetCourseStudents(int id)
         {
-            var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value);
-            var userType = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+            var userId = GetUserId();
+            var userType = GetUserRole();
 
             var course = await _context.Courses.FindAsync(id);
             if (course == null)
@@ -286,8 +365,8 @@ namespace ExamSystem.Controllers
         [HttpPost("exams/{id}/publish")]
         public async Task<IActionResult> PublishExam(int id)
         {
-            var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value);
-            var userType = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+            var userId = GetUserId();
+            var userType = GetUserRole();
 
             var exam = await _context.Exams.FindAsync(id);
             if (exam == null)
@@ -313,13 +392,109 @@ namespace ExamSystem.Controllers
             return Ok(new { message = "Exam published successfully" });
         }
 
+        [HttpGet("exams/{id}/questions")]
+        public async Task<IActionResult> GetExamQuestions(int id)
+        {
+            var userId = GetUserId();
+            var userType = GetUserRole();
+
+            var exam = await _context.Exams.FindAsync(id);
+            if (exam == null)
+            {
+                return NotFound(new { message = "Exam not found" });
+            }
+
+            if (userType != "Admin" && exam.TeacherId != userId)
+            {
+                return Forbid();
+            }
+
+            var questions = await _context.Questions
+                .Where(q => q.ExamId == id)
+                .OrderBy(q => q.QuestionOrder)
+                .Select(q => new
+                {
+                    q.Id,
+                    q.QuestionText,
+                    q.OptionA,
+                    q.OptionB,
+                    q.OptionC,
+                    q.OptionD,
+                    q.CorrectAnswer,
+                    q.Marks,
+                    q.QuestionOrder
+                })
+                .ToListAsync();
+
+            return Ok(questions);
+        }
+
+        [HttpPost("exams/{id}/questions")]
+        public async Task<IActionResult> AddQuestion(int id, [FromBody] CreateQuestionModel model)
+        {
+            var userId = GetUserId();
+            var userType = GetUserRole();
+
+            var exam = await _context.Exams.FindAsync(id);
+            if (exam == null)
+            {
+                return NotFound(new { message = "Exam not found" });
+            }
+
+            if (userType != "Admin" && exam.TeacherId != userId)
+            {
+                return Forbid();
+            }
+
+            var question = new Question
+            {
+                ExamId = id,
+                QuestionText = model.QuestionText,
+                OptionA = model.OptionA,
+                OptionB = model.OptionB,
+                OptionC = model.OptionC,
+                OptionD = model.OptionD,
+                CorrectAnswer = model.CorrectAnswer,
+                Marks = model.Marks,
+                QuestionOrder = await _context.Questions.CountAsync(q => q.ExamId == id) + 1
+            };
+
+            _context.Questions.Add(question);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Question added successfully", question.Id });
+        }
+
+        [HttpDelete("questions/{id}")]
+        public async Task<IActionResult> DeleteQuestion(int id)
+        {
+            var userId = GetUserId();
+            var userType = GetUserRole();
+
+            var question = await _context.Questions.Include(q => q.Exam).FirstOrDefaultAsync(q => q.Id == id);
+            if (question == null)
+            {
+                return NotFound(new { message = "Question not found" });
+            }
+
+            if (userType != "Admin" && question.Exam.TeacherId != userId)
+            {
+                return Forbid();
+            }
+
+            _context.Questions.Remove(question);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Question deleted successfully" });
+        }
+
         [HttpGet("statistics")]
         public async Task<IActionResult> GetMyStatistics()
         {
             try
             {
-                var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value);
-                var userType = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+                var userId = GetUserId();
+                var userType = GetUserRole();
 
                 Console.WriteLine($"📊 Getting statistics for user: {userId}, type: {userType}");
 
@@ -387,5 +562,16 @@ namespace ExamSystem.Controllers
         public int PassingScore { get; set; }
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
+    }
+
+    public class CreateQuestionModel
+    {
+        public string QuestionText { get; set; }
+        public string OptionA { get; set; }
+        public string OptionB { get; set; }
+        public string OptionC { get; set; }
+        public string OptionD { get; set; }
+        public string CorrectAnswer { get; set; } // A, B, C, D
+        public int Marks { get; set; }
     }
 }

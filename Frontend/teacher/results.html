@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نتائج الاختبارات - ExamPro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header
+            style="background: white; padding: 1rem 0; border-radius: 16px; margin-bottom: 2rem; box-shadow: var(--shadow-lg);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <button class="btn btn-secondary" onclick="window.location.href='dashboard.html'">
+                        <i class="fas fa-arrow-right"></i>
+                        العودة للرئيسية
+                    </button>
+                    <div>
+                        <h1 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-800); margin: 0;">نتائج الطلاب
+                        </h1>
+                        <p style="color: var(--gray-600); margin: 0; font-size: 0.9rem;">عرض أداء الطلاب في جميع
+                            الاختبارات</p>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Results List -->
+        <div class="card">
+            <div id="resultsList">
+                <div style="text-align: center; padding: 2rem; color: var(--gray-600);">جاري تحميل النتائج...</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script>
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!checkAuth() || !api.isTeacher()) {
+                window.location.href = '../login.html';
+                return;
+            }
+            await loadResults();
+        });
+
+        // Check auth
+        function checkAuth() {
+            const token = localStorage.getItem('token');
+            return !!token;
+        }
+
+        // Load results
+        async function loadResults() {
+            try {
+                const response = await fetch(`${api.baseURL}/teacher/results`, {
+                    headers: { 'Authorization': `Bearer ${api.token}` }
+                });
+
+                if (response.ok) {
+                    const results = await response.json();
+                    displayResults(results);
+                } else {
+                    document.getElementById('resultsList').innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--danger);">فشل تحميل النتائج</div>';
+                }
+            } catch (error) {
+                console.error('Error loading results:', error);
+                document.getElementById('resultsList').innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--danger);">حدث خطأ أثناء تحميل البيانات</div>';
+            }
+        }
+
+        function displayResults(results) {
+            const container = document.getElementById('resultsList');
+            if (!results || results.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--gray-600);">لا توجد نتائج اختبارات حتى الآن.</div>';
+                return;
+            }
+
+            const tableHtml = `
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: var(--gray-50); border-bottom: 2px solid var(--gray-200);">
+                            <th style="text-align: right; padding: 1rem;">الطالب</th>
+                            <th style="text-align: right; padding: 1rem;">الاختبار</th>
+                            <th style="text-align: right; padding: 1rem;">الدورة</th>
+                            <th style="text-align: right; padding: 1rem;">الدرجة</th>
+                            <th style="text-align: right; padding: 1rem;">الحالة</th>
+                            <th style="text-align: right; padding: 1rem;">التاريخ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${results.map((result, index) => {
+                const student = result.StudentName || result.studentName || 'غير معروف';
+                const exam = result.ExamTitle || result.examTitle || 'غير معروف';
+                const course = result.CourseName || result.courseName || '-';
+                const score = result.Score !== undefined ? result.Score : result.score;
+                const total = result.TotalMarks || result.totalMarks || 100;
+                const isPassed = result.IsPassed || result.isPassed;
+                const date = new Date(result.CompletedDate || result.completedDate).toLocaleDateString('ar-SA');
+
+                const statusColor = isPassed ? 'var(--success)' : 'var(--danger)';
+                const statusText = isPassed ? 'ناجح' : 'راسب';
+                const statusIcon = isPassed ? 'check-circle' : 'times-circle';
+
+                return `
+                                <tr style="border-bottom: 1px solid var(--gray-100);">
+                                    <td style="padding: 1rem; font-weight: 600;">${student}</td>
+                                    <td style="padding: 1rem;">${exam}</td>
+                                    <td style="padding: 1rem; color: var(--gray-600);">${course}</td>
+                                    <td style="padding: 1rem; font-weight: bold;">${score} / ${total}</td>
+                                    <td style="padding: 1rem;">
+                                        <span style="color: ${statusColor}; font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
+                                            <i class="fas fa-${statusIcon}"></i> ${statusText}
+                                        </span>
+                                    </td>
+                                    <td style="padding: 1rem; color: var(--gray-500); font-size: 0.9rem;">${date}</td>
+                                </tr>
+                            `;
+            }).join('')}
+                    </tbody>
+                </table>
+            `;
+            container.innerHTML = tableHtml;
+        }
+    </script>
+</body>
+
+</html>

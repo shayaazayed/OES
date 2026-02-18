@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Security.Claims;
 
 namespace ExamSystem.Controllers
 {
@@ -22,10 +23,15 @@ namespace ExamSystem.Controllers
             _context = context;
         }
 
+        private int GetStudentId()
+        {
+            return int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+        }
+
         [HttpGet("exams/available")]
         public async Task<IActionResult> GetAvailableExams()
         {
-            var studentId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value);
+            var studentId = GetStudentId();
 
             var availableExams = await _context.Enrollments
                 .Where(e => e.StudentId == studentId)
@@ -59,7 +65,7 @@ namespace ExamSystem.Controllers
         [HttpGet("exams/started")]
         public async Task<IActionResult> GetStartedExams()
         {
-            var studentId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value);
+            var studentId = GetStudentId();
 
             var startedExams = await _context.StudentExams
                 .Where(se => se.StudentId == studentId && se.Status == "Started")
@@ -85,7 +91,7 @@ namespace ExamSystem.Controllers
         [HttpPost("exams/{id}/start")]
         public async Task<IActionResult> StartExam(int id)
         {
-            var studentId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value);
+            var studentId = GetStudentId();
 
             // Check if student is enrolled in the course
             var exam = await _context.Exams
@@ -142,7 +148,7 @@ namespace ExamSystem.Controllers
         [HttpGet("exams/{id}/questions")]
         public async Task<IActionResult> GetExamQuestions(int id)
         {
-            var studentId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value);
+            var studentId = GetStudentId();
 
             var studentExam = await _context.StudentExams
                 .FirstOrDefaultAsync(se => se.ExamId == id && se.StudentId == studentId && se.Status == "Started");
@@ -189,7 +195,7 @@ namespace ExamSystem.Controllers
         [HttpPost("exams/{id}/answer")]
         public async Task<IActionResult> SubmitAnswer(int id, [FromBody] SubmitAnswerModel model)
         {
-            var studentId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value);
+            var studentId = GetStudentId();
 
             var studentExam = await _context.StudentExams
                 .FirstOrDefaultAsync(se => se.ExamId == id && se.StudentId == studentId && se.Status == "Started");
@@ -243,7 +249,7 @@ namespace ExamSystem.Controllers
         [HttpPost("exams/{id}/submit")]
         public async Task<IActionResult> SubmitExam(int id)
         {
-            var studentId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value);
+            var studentId = GetStudentId();
 
             var studentExam = await _context.StudentExams
                 .Include(se => se.StudentAnswers)
@@ -273,7 +279,7 @@ namespace ExamSystem.Controllers
         [HttpGet("exams/{id}/result")]
         public async Task<IActionResult> GetExamResult(int id)
         {
-            var studentId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value);
+            var studentId = GetStudentId();
 
             var studentExam = await _context.StudentExams
                 .Include(se => se.Exam)
@@ -322,7 +328,7 @@ namespace ExamSystem.Controllers
         [HttpGet("history")]
         public async Task<IActionResult> GetExamHistory()
         {
-            var studentId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value);
+            var studentId = GetStudentId();
 
             var history = await _context.StudentExams
                 .Where(se => se.StudentId == studentId && se.Status == "Submitted")
