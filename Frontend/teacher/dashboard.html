@@ -273,7 +273,9 @@
         // View exam details
         function viewExamDetails(examId) {
             console.log('📋 Viewing exam details for ID:', examId);
-            window.location.href = `exam-details.html?id=${examId}`;
+            // Save to sessionStorage as backup (serve may strip query params)
+            sessionStorage.setItem('currentExamId', examId);
+            window.location.href = `exam-details.html?id=${examId}&t=${Date.now()}`;
         }
 
         // Format date
@@ -460,7 +462,16 @@
                     // Redirect to exam details page to add questions
                     setTimeout(() => {
                         const examId = result.Id || result.id;
-                        window.location.href = `exam-details.html?id=${examId}`;
+                        console.log('📋 Full API result:', JSON.stringify(result));
+                        console.log('📋 Extracted examId:', examId);
+                        if (examId) {
+                            // Save to sessionStorage as backup
+                            sessionStorage.setItem('currentExamId', examId);
+                            window.location.href = `exam-details.html?id=${examId}&t=${Date.now()}`;
+                        } else {
+                            console.error('❌ Created exam but ID is missing:', result);
+                            showAlert('تم إنشاء الاختبار لكن حدث خطأ في الانتقال للتفاصيل', 'warning');
+                        }
                     }, 1500);
                 } else {
                     const errorText = await response.text();

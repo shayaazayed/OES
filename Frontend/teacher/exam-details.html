@@ -15,7 +15,7 @@
     <div class="container">
         <!-- Header -->
         <header
-            style="background: white; padding: 1rem 0; border-radius: 16px; margin-bottom: 2rem; box-shadow: var(--shadow-lg);">
+            style="background: white; padding: 1rem 1.5rem; border-radius: 16px; margin-bottom: 2rem; box-shadow: var(--shadow-lg);">
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <div style="display: flex; align-items: center; gap: 1rem;">
                     <button class="btn btn-secondary" onclick="window.location.href='dashboard.html'">
@@ -24,8 +24,8 @@
                     </button>
                     <div>
                         <h1 id="pageTitle"
-                            style="font-size: 1.5rem; font-weight: 700; color: var(--gray-800); margin: 0;">تفاصيل
-                            الاختبار</h1>
+                            style="font-size: 1.5rem; font-weight: 700; color: var(--gray-800); margin: 0;">
+                            تفاصيل الاختبار</h1>
                         <p id="pageSubtitle" style="color: var(--gray-600); margin: 0; font-size: 0.9rem;">جاري
                             التحميل...</p>
                     </div>
@@ -43,11 +43,59 @@
             </div>
         </header>
 
+        <!-- ===== Exam Summary Card (Shows first!) ===== -->
+        <div id="examSummaryCard" class="card" style="margin-bottom: 2rem; display: none;">
+            <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
+                <!-- Exam Icon -->
+                <div
+                    style="width: 70px; height: 70px; background: linear-gradient(135deg, #3b82f6, #2563eb); border-radius: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <i class="fas fa-clipboard-list" style="font-size: 2rem; color: white;"></i>
+                </div>
+                <!-- Exam Title & Course -->
+                <div style="flex: 1; min-width: 200px;">
+                    <h2 id="examNameDisplay"
+                        style="font-size: 1.6rem; font-weight: 800; color: var(--gray-800); margin: 0 0 0.25rem;">
+                        جاري التحميل...
+                    </h2>
+                    <p id="examCourseDisplay" style="color: var(--gray-500); margin: 0; font-size: 0.95rem;">
+                        <i class="fas fa-graduation-cap" style="margin-left: 0.3rem;"></i>
+                        <span>—</span>
+                    </p>
+                </div>
+                <!-- Stats Badges -->
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <div
+                        style="text-align: center; padding: 0.75rem 1.25rem; background: var(--gray-50); border-radius: 12px; border: 1px solid var(--gray-200);">
+                        <div id="statDuration" style="font-size: 1.3rem; font-weight: 800; color: #3b82f6;">—</div>
+                        <div style="font-size: 0.75rem; color: var(--gray-500); margin-top: 0.15rem;">دقيقة</div>
+                    </div>
+                    <div
+                        style="text-align: center; padding: 0.75rem 1.25rem; background: var(--gray-50); border-radius: 12px; border: 1px solid var(--gray-200);">
+                        <div id="statTotalMarks" style="font-size: 1.3rem; font-weight: 800; color: #10b981;">—</div>
+                        <div style="font-size: 0.75rem; color: var(--gray-500); margin-top: 0.15rem;">الدرجة الكلية
+                        </div>
+                    </div>
+                    <div
+                        style="text-align: center; padding: 0.75rem 1.25rem; background: var(--gray-50); border-radius: 12px; border: 1px solid var(--gray-200);">
+                        <div id="statPassingScore" style="font-size: 1.3rem; font-weight: 800; color: #f59e0b;">—</div>
+                        <div style="font-size: 0.75rem; color: var(--gray-500); margin-top: 0.15rem;">درجة النجاح</div>
+                    </div>
+                    <div
+                        style="text-align: center; padding: 0.75rem 1.25rem; background: var(--gray-50); border-radius: 12px; border: 1px solid var(--gray-200);">
+                        <div id="statStatus" style="font-size: 1.3rem; font-weight: 800; color: #8b5cf6;">—</div>
+                        <div style="font-size: 0.75rem; color: var(--gray-500); margin-top: 0.15rem;">الحالة</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== Main Content Grid ===== -->
         <div style="display: grid; grid-template-columns: 350px 1fr; gap: 2rem; align-items: start;">
-            <!-- Exam Info Sidebar -->
+            <!-- Exam Info Sidebar (Edit Form) -->
             <div class="card">
                 <div class="card-header">
-                    <h2 class="card-title">معلومات الاختبار</h2>
+                    <h2 class="card-title"><i class="fas fa-edit"
+                            style="margin-left: 0.5rem; color: var(--primary);"></i>تعديل معلومات الاختبار</h2>
                 </div>
                 <form id="editExamForm">
                     <div style="margin-bottom: 1rem;">
@@ -77,7 +125,8 @@
             <!-- Questions Section -->
             <div class="card">
                 <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-                    <h2 class="card-title">الأسئلة</h2>
+                    <h2 class="card-title"><i class="fas fa-list-ol"
+                            style="margin-left: 0.5rem; color: var(--primary);"></i>الأسئلة</h2>
                     <button class="btn btn-primary" onclick="showAddQuestionModal()">
                         <i class="fas fa-plus"></i>
                         إضافة سؤال
@@ -90,9 +139,9 @@
         </div>
     </div>
 
-    <!-- Add Question Modal -->
+    <!-- Add Question Modal (HIDDEN by default - uses separate style for display) -->
     <div id="addQuestionModal"
-        style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;">
+        style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000; display: none;">
         <div
             style="background: white; padding: 2rem; border-radius: 16px; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto;">
             <h2 id="questionModalTitle" style="margin-top: 0; color: var(--gray-800);">إضافة سؤال جديد</h2>
@@ -119,7 +168,6 @@
                     <div id="optionsContainer">
                         <!-- Options will be generated here -->
                     </div>
-
                 </div>
 
                 <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem;">
@@ -133,53 +181,149 @@
     <script src="../js/api.js"></script>
     <script>
         // Global variables
-        const urlParams = new URLSearchParams(window.location.search);
-        const examId = urlParams.get('id');
         let currentExam = null;
         let isEditingQuestion = false;
         let currentQuestionId = null;
 
+        // Helper to get Exam ID reliably from MULTIPLE sources
+        function getExamId() {
+            // Source 1: URL query params (?id=123)
+            const params = new URLSearchParams(window.location.search);
+            let id = params.get('id');
+            console.log('🔍 Source 1 (URL params) id:', id);
+
+            // Source 2: URL hash (#123)
+            if (!id || id === 'null' || id === 'undefined') {
+                const hash = window.location.hash.replace('#', '');
+                if (hash && hash !== 'null' && hash !== 'undefined') {
+                    id = hash;
+                    console.log('🔍 Source 2 (URL hash) id:', id);
+                }
+            }
+
+            // Source 3: sessionStorage (set by dashboard before navigating)
+            if (!id || id === 'null' || id === 'undefined') {
+                id = sessionStorage.getItem('currentExamId');
+                console.log('🔍 Source 3 (sessionStorage) id:', id);
+            }
+
+            // Final validation
+            if (!id || id === 'null' || id === 'undefined') {
+                console.error('❌ Exam ID not found in ANY source');
+                return null;
+            }
+
+            console.log('✅ Final Exam ID resolved:', id);
+            return id;
+        }
+
+        const examId = getExamId();
+        console.log('📝 Exam Details - Using ExamID:', examId, '| Full URL:', window.location.href);
+
         // Check auth and load data
         document.addEventListener('DOMContentLoaded', async () => {
-            if (!checkAuth() || !api.isTeacher()) {
+            console.log('🚀 DOM Loaded');
+
+            // 1. Auth Check
+            const token = localStorage.getItem('token');
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            const userType = user.UserType || user.userType;
+
+            if (!token || userType !== 'Teacher') {
+                console.log('❌ Auth failed', { token: !!token, userType });
                 window.location.href = '../login.html';
                 return;
             }
 
+            // 2. Exam ID Check
             if (!examId) {
-                showAlert('رقم الاختبار غير موجود', 'danger');
-                setTimeout(() => window.location.href = 'dashboard.html', 2000);
+                console.error('❌ Missing Exam ID');
+                showFullPageError('رقم الاختبار مفقود', 'عذراً، لا يمكن عرض تفاصيل الاختبار لأن رابط الصفحة غير صحيح أو ناقص.');
                 return;
             }
 
+            // 3. Load Data
             await loadExamDetails();
             await loadQuestions();
         });
 
+        // Show Full Page Error (Removes all other content)
+        function showFullPageError(title, message) {
+            document.body.innerHTML = `
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; background: #f3f4f6; font-family: 'Inter', sans-serif;">
+                    <div style="background: white; padding: 3rem; border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); text-align: center; max-width: 500px; width: 90%;">
+                        <div style="width: 80px; height: 80px; background: #fee2e2; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+                            <i class="fas fa-exclamation-triangle" style="font-size: 2.5rem; color: #ef4444;"></i>
+                        </div>
+                        <h1 style="font-size: 1.75rem; font-weight: 700; color: #111827; margin-bottom: 1rem;">${title}</h1>
+                        <p style="color: #6b7280; margin-bottom: 2rem; line-height: 1.6;">${message}</p>
+                        <div style="display: flex; gap: 1rem; justify-content: center;">
+                             <button onclick="window.location.reload()" style="padding: 0.75rem 1.5rem; background: white; border: 1px solid #d1d5db; border-radius: 8px; color: #374151; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                                إعادة المحاولة
+                            </button>
+                            <button onclick="window.location.href='dashboard.html'" style="padding: 0.75rem 1.5rem; background: #2563eb; border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                                العودة للوحة التحكم
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
         // Load Exam Details
         async function loadExamDetails() {
             try {
-                // Fetch exam details (assuming endpoint exists or using getTeacherExams and filtering)
-                // Since we don't have a direct "getExamById" for teacher usually, we might need to rely on the teacher exams list
-                // OR implement a specific endpoint. Let's try fetching all teacher exams and finding this one first.
                 const exams = await api.getTeacherExams();
-                currentExam = exams.find(e => e.Id == examId);
+                console.log('📋 All exams:', exams);
+                console.log('🔍 Looking for examId:', examId);
+
+                currentExam = exams.find(e => (e.Id || e.id) == examId);
+                console.log('✅ Found exam:', currentExam);
 
                 if (!currentExam) {
-                    throw new Error('الاختبار غير موجود');
+                    throw new Error('Exam not found in list');
                 }
 
-                document.getElementById('pageSubtitle').textContent = currentExam.CourseName;
-                document.getElementById('examTitle').value = currentExam.Title;
-                document.getElementById('examDuration').value = currentExam.DurationMinutes;
-                document.getElementById('totalMarks').value = currentExam.TotalMarks;
-                document.getElementById('passingScore').value = currentExam.PassingScore;
+                // Support both camelCase (from ASP.NET default) and PascalCase
+                const title = currentExam.title || currentExam.Title || 'بدون عنوان';
+                const course = currentExam.courseName || currentExam.CourseName || 'غير محدد';
+                const duration = currentExam.durationMinutes || currentExam.DurationMinutes || 0;
+                const totalMarks = currentExam.totalMarks || currentExam.TotalMarks || 0;
+                const passingScore = currentExam.passingScore || currentExam.PassingScore || 0;
+                const isPublished = currentExam.isPublished || currentExam.IsPublished || false;
+
+                console.log('📝 Exam data:', { title, course, duration, totalMarks, passingScore, isPublished });
+
+                // Update Page Header
+                document.getElementById('pageTitle').textContent = title;
+                document.getElementById('pageSubtitle').textContent = course;
+
+                // Update Summary Card
+                document.getElementById('examNameDisplay').textContent = title;
+                document.getElementById('examCourseDisplay').innerHTML = `<i class="fas fa-graduation-cap" style="margin-left: 0.3rem;"></i> ${course}`;
+                document.getElementById('statDuration').textContent = duration;
+                document.getElementById('statTotalMarks').textContent = totalMarks;
+                document.getElementById('statPassingScore').textContent = passingScore;
+                document.getElementById('statStatus').textContent = isPublished ? 'منشور' : 'مسودة';
+                document.getElementById('statStatus').style.color = isPublished ? '#10b981' : '#f59e0b';
+
+                // Show summary card
+                document.getElementById('examSummaryCard').style.display = 'block';
+
+                // Fill Edit Form
+                document.getElementById('examTitle').value = title;
+                document.getElementById('examDuration').value = duration;
+                document.getElementById('totalMarks').value = totalMarks;
+                document.getElementById('passingScore').value = passingScore;
+
+                // Update browser tab title
+                document.title = `${title} - ExamPro`;
 
                 updatePublishButton();
 
             } catch (error) {
                 console.error('Error loading exam:', error);
-                showAlert('فشل تحميل تفاصيل الاختبار', 'danger');
+                showFullPageError('فشل تحميل الاختبار', 'لم نتمكن من العثور على بيانات هذا الاختبار. ربما تم حذفه أو أنك لا تملك صلاحية الوصول إليه.');
             }
         }
 
@@ -194,12 +338,11 @@
                     const questions = await response.json();
                     displayQuestions(questions);
                 } else {
-                    console.warn('Failed to load questions');
-                    document.getElementById('questionsList').innerHTML = '<p class="text-center">فشل تحميل الأسئلة</p>';
+                    document.getElementById('questionsList').innerHTML = '<p class="text-center text-danger">فشل تحميل الأسئلة</p>';
                 }
             } catch (error) {
                 console.error('Error loading questions:', error);
-                document.getElementById('questionsList').innerHTML = '<p class="text-center">فشل تحميل الأسئلة</p>';
+                document.getElementById('questionsList').innerHTML = '<p class="text-center text-danger">خطأ في الاتصال</p>';
             }
         }
 
@@ -232,7 +375,6 @@
                             </div>
                         </div>
                         <div style="display: flex; gap: 0.5rem;">
-                            <!-- <button class="btn btn-warning btn-sm" onclick="editQuestion(${id})"><i class="fas fa-edit"></i></button> -->
                             <button class="btn btn-danger btn-sm" onclick="deleteQuestion(${id})"><i class="fas fa-trash"></i></button>
                         </div>
                     </div>
@@ -249,12 +391,18 @@
 
         // Modal Functions
         function showAddQuestionModal() {
+            // Re-verify examId before working
+            if (!getExamId()) {
+                showAlert('رقم الاختبار مفقود! قم بتحديث الصفحة.', 'danger');
+                return;
+            }
+
             isEditingQuestion = false;
             currentQuestionId = null;
             document.getElementById('questionModalTitle').textContent = 'إضافة سؤال جديد';
             document.getElementById('questionForm').reset();
-            document.getElementById('questionType').value = 'MultipleChoice'; // Default
-            toggleQuestionType(); // Initialize options
+            document.getElementById('questionType').value = 'MultipleChoice';
+            toggleQuestionType();
             document.getElementById('addQuestionModal').style.display = 'flex';
         }
 
@@ -263,39 +411,53 @@
         }
 
         function toggleQuestionType() {
-            const type = document.getElementById('questionType').value;
-            const container = document.getElementById('optionsContainer');
-            container.innerHTML = '';
+            try {
+                const type = document.getElementById('questionType').value;
+                const container = document.getElementById('optionsContainer');
+                if (!container) return; // guard
 
-            if (type === 'TrueFalse') {
-                container.innerHTML = `
-                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
-                        <input type="radio" name="correctOption" value="A" required>
-                        <span>صح</span>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
-                        <input type="radio" name="correctOption" value="B" required>
-                        <span>خطأ</span>
-                    </div>
-                `;
-                document.querySelector('#optionsSection button').style.display = 'none';
-            } else {
-                ['A', 'B', 'C', 'D'].forEach(opt => {
-                    container.innerHTML += `
-                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                            <input type="radio" name="correctOption" value="${opt}" required>
-                            <span style="font-weight: bold; width: 20px;">${opt}:</span>
-                            <input type="text" id="option${opt}" class="form-control" placeholder="الخيار ${opt}" required>
+                container.innerHTML = '';
+
+                if (type === 'TrueFalse') {
+                    container.innerHTML = `
+                        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
+                            <input type="radio" name="correctOption" value="A" required>
+                            <span>صح</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
+                            <input type="radio" name="correctOption" value="B" required>
+                            <span>خطأ</span>
                         </div>
                     `;
-                });
-                document.querySelector('#optionsSection button').style.display = 'none';
+                } else {
+                    ['A', 'B', 'C', 'D'].forEach(opt => {
+                        container.innerHTML += `
+                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                <input type="radio" name="correctOption" value="${opt}" required>
+                                <span style="font-weight: bold; width: 20px;">${opt}:</span>
+                                <input type="text" id="option${opt}" class="form-control" placeholder="الخيار ${opt}" required>
+                            </div>
+                        `;
+                    });
+                }
+
+                // NO DOM MANIPULATION ON 'optionsSection button' HERE
+                // because it causes errors if button doesn't exist or layout changes
+            } catch (e) {
+                console.error('Error in toggleQuestionType:', e);
             }
         }
 
         // Handle Question Form Submit
         document.getElementById('questionForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+
+            // Safety Check
+            const activeId = getExamId();
+            if (!activeId) {
+                showAlert('خطأ: رقم الاختبار مفقود. يرجى تحديث الصفحة.', 'danger');
+                return;
+            }
 
             const questionText = document.getElementById('questionText').value;
             const marks = parseInt(document.getElementById('questionMarks').value);
@@ -333,7 +495,8 @@
             };
 
             try {
-                const response = await fetch(`${api.baseURL}/teacher/exams/${examId}/questions`, {
+                const url = `${api.baseURL}/teacher/exams/${activeId}/questions`;
+                const response = await fetch(url, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${api.token}`,
@@ -349,10 +512,14 @@
                 } else {
                     const error = await response.text();
                     try {
-                        const jsonDate = JSON.parse(error);
-                        showAlert('فشل إضافة السؤال: ' + (jsonDate.message || error), 'danger');
+                        const jsonError = JSON.parse(error);
+                        let msg = jsonError.message || jsonError.title || 'Validation Error';
+                        if (jsonError.errors) {
+                            msg += ': ' + JSON.stringify(jsonError.errors);
+                        }
+                        showAlert('فشل الإضافة: ' + msg, 'danger');
                     } catch (e) {
-                        showAlert('فشل إضافة السؤال: ' + error, 'danger');
+                        showAlert('فشل الإضافة: ' + error, 'danger');
                     }
                 }
             } catch (error) {
@@ -364,6 +531,8 @@
         // Handle Exam Info Edit
         document.getElementById('editExamForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const activeId = getExamId();
+            if (!activeId) return;
 
             const title = document.getElementById('examTitle').value;
             const duration = parseInt(document.getElementById('examDuration').value);
@@ -371,25 +540,26 @@
 
             const payload = {
                 Title: title,
-                Description: currentExam.Description || '',
+                Description: currentExam?.description || currentExam?.Description || '',
                 DurationMinutes: duration,
-                TotalMarks: currentExam.TotalMarks,
+                TotalMarks: currentExam?.totalMarks || currentExam?.TotalMarks || 0,
                 PassingScore: passingScore,
-                StartDate: currentExam.StartDate,
-                EndDate: currentExam.EndDate
+                StartDate: currentExam?.startDate || currentExam?.StartDate,
+                EndDate: currentExam?.endDate || currentExam?.EndDate
             };
 
             try {
-                await api.request(`/teacher/exams/${examId}`, {
+                await api.request(`/teacher/exams/${activeId}`, {
                     method: 'PUT',
                     body: JSON.stringify(payload)
                 });
 
                 showAlert('تم تحديث معلومات الاختبار بنجاح', 'success');
-                // Update local state
-                currentExam.Title = title;
-                currentExam.DurationMinutes = duration;
-                currentExam.PassingScore = passingScore;
+                if (currentExam) {
+                    currentExam.title = title;
+                    currentExam.durationMinutes = duration;
+                    currentExam.passingScore = passingScore;
+                }
 
             } catch (error) {
                 console.error('Error updating exam:', error);
@@ -421,17 +591,20 @@
 
         // Toggle Publish
         async function togglePublish() {
-            if (currentExam.IsPublished) {
-                showAlert('لا يمكن إلغاء النشر حالياً (غير مدعوم من الخادم)', 'warning');
+            const activeId = getExamId();
+            if (!activeId) return;
+
+            if (currentExam && (currentExam.isPublished || currentExam.IsPublished)) {
+                showAlert('لا يمكن إلغاء النشر حالياً', 'warning');
                 return;
             }
 
             if (!confirm('هل أنت متأكد من نشر هذا الاختبار؟ سيظهر للطلاب فوراً.')) return;
 
             try {
-                await api.publishExam(examId);
+                await api.publishExam(activeId);
                 showAlert('تم نشر الاختبار بنجاح', 'success');
-                currentExam.IsPublished = true;
+                if (currentExam) { currentExam.isPublished = true; currentExam.IsPublished = true; }
                 updatePublishButton();
             } catch (error) {
                 console.error('Error publishing exam:', error);
@@ -440,10 +613,11 @@
         }
 
         function updatePublishButton() {
+            if (!currentExam) return;
             const btn = document.getElementById('publishBtn');
             const btnText = document.getElementById('publishBtnText');
             btn.style.display = 'inline-flex';
-            if (currentExam.IsPublished) {
+            if (currentExam.isPublished || currentExam.IsPublished) {
                 btn.className = 'btn btn-warning';
                 btnText.textContent = 'إلغاء النشر';
             } else {
@@ -454,9 +628,12 @@
 
         // Delete Exam
         async function deleteExam() {
+            const activeId = getExamId();
+            if (!activeId) return;
+
             if (confirm('هل أنت متأكد من حذف هذا الاختبار؟ هذا الإجراء لا يمكن التراجع عنه.')) {
                 try {
-                    await api.request(`/teacher/exams/${examId}`, { method: 'DELETE' });
+                    await api.request(`/teacher/exams/${activeId}`, { method: 'DELETE' });
                     showAlert('تم حذف الاختبار بنجاح', 'success');
                     setTimeout(() => window.location.href = 'dashboard.html', 1500);
                 } catch (error) {
@@ -464,11 +641,6 @@
                     showAlert('فشل حذف الاختبار: ' + error.message, 'danger');
                 }
             }
-        }
-
-        function checkAuth() {
-            const token = localStorage.getItem('token');
-            return !!token;
         }
 
         function showAlert(message, type = 'info') {
