@@ -142,6 +142,19 @@ class ApiService {
     // 👥 USER MANAGEMENT ENDPOINTS
     // ==========================================
 
+    async getProfile() {
+        // 🎯 ENDPOINT: /auth/profile
+        return await this.request('/auth/profile');
+    }
+
+    async updateProfile(profileData) {
+        // 🎯 ENDPOINT: /auth/profile (PUT)
+        return await this.request('/auth/profile', {
+            method: 'PUT',
+            body: JSON.stringify(profileData)
+        });
+    }
+
     async getAllUsers() {
         // 🎯 ENDPOINT: /admin/users (Admin controller)
         return await this.request('/admin/users');
