@@ -144,9 +144,9 @@ class ApiService {
     }
   }
 
-  // ==========================================
-  // 👥 USER MANAGEMENT ENDPOINTS
-  // ==========================================
+    // ==========================================
+    // 👥 USER MANAGEMENT ENDPOINTS
+    // ==========================================
 
   async getAllUsers() {
     // 🎯 ENDPOINT: /admin/users (Admin controller)

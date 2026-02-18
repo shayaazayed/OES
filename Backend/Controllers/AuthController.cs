@@ -124,6 +124,24 @@ namespace ExamSystem.Controllers
             return Ok(new { user.Id, user.Username, user.Email, user.FullName, user.UserType, user.CreatedDate });
         }
 
+        [HttpPut("profile")]
+        public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileModel model)
+        {
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            var user = await _context.Users.FindAsync(userId);
+
+            if (user == null)
+            {
+                return NotFound(new { message = "User not found" });
+            }
+
+            user.FullName = model.FullName;
+            
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Profile updated successfully", user = new { user.Id, user.Username, user.Email, user.FullName, user.UserType } });
+        }
+
         private string GenerateJwtToken(User user)
         {
             try
@@ -210,5 +228,10 @@ namespace ExamSystem.Controllers
     {
         public string CurrentPassword { get; set; }
         public string NewPassword { get; set; }
+    }
+
+    public class UpdateProfileModel
+    {
+        public string FullName { get; set; }
     }
 }
