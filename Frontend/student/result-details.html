@@ -192,6 +192,13 @@
         }
 
         function renderExamOverview(result) {
+            console.log('🔍 Result data received:', result);
+            console.log('🔍 Percentage:', result.Percentage, result.percentage);
+            console.log('🔍 Passed:', result.Passed, result.passed);
+            console.log('🔍 Score:', result.Score, result.score);
+            console.log('🔍 TotalMarks:', result.TotalMarks, result.totalMarks);
+            console.log('🔍 PassingScore:', result.PassingScore, result.passingScore);
+
             const examTitle = result.ExamTitle || result.examTitle || 'اختبار';
             const courseName = result.CourseName || result.courseName || '';
             const submittedTime = result.SubmittedTime || result.submittedTime;
