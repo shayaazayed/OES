@@ -14,10 +14,26 @@ namespace ExamSystem.Controllers
     public class SeedDataController : ControllerBase
     {
         private readonly ExamSystemDbContext _context;
+        private readonly DatabaseSeeder _seeder;
 
-        public SeedDataController(ExamSystemDbContext context)
+        public SeedDataController(ExamSystemDbContext context, DatabaseSeeder seeder)
         {
             _context = context;
+            _seeder = seeder;
+        }
+
+        [HttpPost("seed-all")]
+        public async Task<IActionResult> SeedAll()
+        {
+            try
+            {
+                await _seeder.SeedAllData();
+                return Ok(new { Message = "Database seeded successfully!" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error seeding database: {ex.Message}");
+            }
         }
 
         [HttpPost("create-student-data")]

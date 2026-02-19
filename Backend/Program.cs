@@ -26,6 +26,9 @@ namespace ExamSystem
             builder.Services.AddDbContext<ExamSystemDbContext>(options =>
                 options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 
+            // Register DatabaseSeeder
+            builder.Services.AddScoped<DatabaseSeeder>();
+
             // Configure JWT Authentication
             var jwtSettings = builder.Configuration.GetSection("Jwt");
             var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]);

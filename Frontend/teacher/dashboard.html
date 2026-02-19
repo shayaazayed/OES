@@ -192,6 +192,9 @@
                                     </span>
                                 </div>
                             </div>
+                            <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); previewExam(${id})" title="معاينة">
+                                <i class="fas fa-eye"></i>
+                            </button>
                         </div>
                     `;
                     }).join('');
@@ -273,6 +276,13 @@
             // Save to sessionStorage as backup (serve may strip query params)
             sessionStorage.setItem('currentExamId', examId);
             window.location.href = `exam-details.html?id=${examId}&t=${Date.now()}`;
+        }
+
+        // Preview exam
+        function previewExam(examId) {
+            console.log('👁️ Previewing exam ID:', examId);
+            sessionStorage.setItem('currentExamId', examId);
+            window.open(`exam-details.html?id=${examId}&preview=true&t=${Date.now()}`, '_blank');
         }
 
         // Format date
