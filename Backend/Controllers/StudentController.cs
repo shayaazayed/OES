@@ -236,7 +236,20 @@ namespace ExamSystem.Controllers
 
             if (existingStudentExam != null)
             {
-                return BadRequest(new { message = "You have already started this exam" });
+                // If exam is already started but not submitted, allow to continue
+                if (existingStudentExam.Status == "Started")
+                {
+                    // Return existing exam data to continue
+                    return Ok(new { 
+                        message = "Exam already in progress, continuing...",
+                        studentExamId = existingStudentExam.Id,
+                        canContinue = true
+                    });
+                }
+                else
+                {
+                    return BadRequest(new { message = "You have already submitted this exam" });
+                }
             }
 
             // Check if exam is within time window
@@ -262,6 +275,50 @@ namespace ExamSystem.Controllers
             await _context.SaveChangesAsync();
 
             return Ok(new { studentExam.Id, studentExam.StartTime, exam.DurationMinutes });
+        }
+
+        [HttpGet("exams/{id}/progress")]
+        public async Task<IActionResult> GetExamProgress(int id)
+        {
+            var studentId = GetStudentId();
+
+            var studentExam = await _context.StudentExams
+                .Include(se => se.StudentAnswers)
+                .ThenInclude(sa => sa.Question)
+                .FirstOrDefaultAsync(se => se.ExamId == id && se.StudentId == studentId && se.Status == "Started");
+
+            if (studentExam == null)
+            {
+                return NotFound(new { message = "No exam in progress found" });
+            }
+
+            var exam = await _context.Exams
+                .Include(e => e.Course)
+                .FirstOrDefaultAsync(e => e.Id == id);
+
+            var answers = studentExam.StudentAnswers
+                .Select(sa => new
+                {
+                    QuestionId = sa.Question.Id,
+                    QuestionText = sa.Question.QuestionText,
+                    OptionA = sa.Question.OptionA,
+                    OptionB = sa.Question.OptionB,
+                    OptionC = sa.Question.OptionC,
+                    OptionD = sa.Question.OptionD,
+                    SelectedAnswer = sa.SelectedAnswer,
+                    Marks = sa.Question.Marks
+                })
+                .ToList();
+
+            return Ok(new
+            {
+                studentExam.Id,
+                studentExam.StartTime,
+                exam.DurationMinutes,
+                exam.Title,
+                exam.Course.CourseName,
+                questions = answers
+            });
         }
 
         [HttpGet("exams/{id}")]
@@ -421,6 +478,7 @@ namespace ExamSystem.Controllers
                 .Include(se => se.StudentAnswers)
                 .ThenInclude(sa => sa.Question)
                 .Include(se => se.Exam)
+                .ThenInclude(e => e.Questions)
                 .FirstOrDefaultAsync(se => se.ExamId == id && se.StudentId == studentId && se.Status == "Started");
 
             if (studentExam == null)
@@ -449,7 +507,7 @@ namespace ExamSystem.Controllers
                             if (existingAnswer != null)
                             {
                                 existingAnswer.SelectedAnswer = GetAnswerLetter(answer.Value);
-                                existingAnswer.IsCorrect = existingAnswer.SelectedAnswer == question.CorrectAnswer;
+                                existingAnswer.IsCorrect = GetAnswerLetter(answer.Value) == question.CorrectAnswer;
                                 existingAnswer.AnswerTime = DateTime.Now;
                             }
                             else
@@ -564,15 +622,16 @@ namespace ExamSystem.Controllers
                 .Select(se => new
                 {
                     se.Id,
-                    ExamTitle = se.Exam.Title,
-                    CourseName = se.Exam.Course.CourseName,
-                    se.StartTime,
-                    se.SubmittedTime,
+                    ExamId = se.ExamId,
+                    ExamTitle = se.Exam != null ? (se.Exam.Title ?? "اختبار بدون اسم") : "اختبار بدون اسم",
+                    CourseName = (se.Exam != null && se.Exam.Course != null) ? (se.Exam.Course.CourseName ?? "دورة") : "دورة",
+                    StartTime = se.StartTime,
+                    SubmittedTime = se.SubmittedTime,
                     se.Score,
-                    TotalMarks = se.Exam.TotalMarks,
-                    PassingScore = se.Exam.PassingScore,
-                    Percentage = se.Exam.TotalMarks > 0 ? (se.Score * 100.0 / se.Exam.TotalMarks) : 0,
-                    Passed = se.Score >= se.Exam.PassingScore
+                    TotalMarks = se.Exam != null ? se.Exam.TotalMarks : 0,
+                    PassingScore = se.Exam != null ? se.Exam.PassingScore : 0,
+                    Percentage = se.Exam != null && se.Exam.TotalMarks > 0 ? (se.Score * 100.0 / se.Exam.TotalMarks) : 0,
+                    Passed = se.Exam != null ? se.Score >= se.Exam.PassingScore : false
                 })
                 .ToListAsync();
 

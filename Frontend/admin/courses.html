@@ -227,18 +227,15 @@
         // Load student count for a course
         async function loadStudentCount(courseId) {
             try {
-                const response = await fetch(`${api.baseURL}/course/${courseId}`, {
-                    headers: {
-                        'Authorization': `Bearer ${api.token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
+                // Get all enrollments and count for this course
+                const allEnrollments = await api.getAllEnrollments();
+                const courseEnrollments = allEnrollments.filter(enrollment => 
+                    enrollment.CourseId === courseId || enrollment.courseId === courseId
+                );
+                const studentCount = courseEnrollments.length;
                 
-                if (response.ok) {
-                    const course = await response.json();
-                    const studentCount = course.StudentCount || course.studentCount || 0;
-                    document.getElementById(`studentCount-${courseId}`).textContent = studentCount;
-                }
+                document.getElementById(`studentCount-${courseId}`).textContent = studentCount;
+                console.log(`📊 Course ${courseId} has ${studentCount} students`);
             } catch (error) {
                 console.error('❌ Failed to load student count:', error);
                 document.getElementById(`studentCount-${courseId}`).textContent = '0';
@@ -256,62 +253,51 @@
                 try {
                     console.log(`📋 Loading enrollments for course ${courseId}...`);
                     
-                    // Get enrollments from TeacherController (admin has access)
-                    const response = await fetch(`${api.baseURL}/teacher/students`, {
-                        headers: {
-                            'Authorization': `Bearer ${api.token}`,
-                            'Content-Type': 'application/json'
-                        }
-                    });
+                    // Get all enrollments from AdminController
+                    const allEnrollments = await api.getAllEnrollments();
+                    console.log('✅ All enrollments loaded:', allEnrollments);
                     
-                    if (response.ok) {
-                        const allEnrollments = await response.json();
-                        console.log('✅ All enrollments loaded:', allEnrollments);
-                        
-                        // Filter enrollments for this course
-                        const courseEnrollments = allEnrollments.filter(enrollment => 
-                            enrollment.CourseId === courseId || enrollment.courseId === courseId
-                        );
-                        
-                        console.log(`📋 Enrollments for course ${courseId}:`, courseEnrollments);
-                        
-                        if (courseEnrollments.length === 0) {
-                            enrollmentsDiv.innerHTML = `
-                                <div style="text-align: center; padding: 1rem; color: var(--gray-600);">
-                                    <i class="fas fa-info-circle"></i>
-                                    لا يوجد طلاب مسجلون في هذه الدورة
-                                </div>
-                            `;
-                        } else {
-                            enrollmentsDiv.innerHTML = `
-                                <h4 style="margin-bottom: 1rem; color: var(--gray-800);">
-                                    <i class="fas fa-users"></i>
-                                    الطلاب المسجلون (${courseEnrollments.length})
-                                </h4>
-                                <div style="max-height: 200px; overflow-y: auto;">
-                                    <table style="width: 100%; border-collapse: collapse;">
-                                        <thead>
-                                            <tr style="background: var(--gray-100);">
-                                                <th style="padding: 0.5rem; text-align: right; border-bottom: 1px solid var(--gray-200); font-size: 0.875rem;">اسم الطالب</th>
-                                                <th style="padding: 0.5rem; text-align: right; border-bottom: 1px solid var(--gray-200); font-size: 0.875rem;">البريد الإلكتروني</th>
-                                                <th style="padding: 0.5rem; text-align: right; border-bottom: 1px solid var(--gray-200); font-size: 0.875rem;">تاريخ التسجيل</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            ${courseEnrollments.map(enrollment => `
-                                                <tr>
-                                                    <td style="padding: 0.5rem; border-bottom: 1px solid var(--gray-100); font-size: 0.875rem;">${enrollment.StudentName || enrollment.studentName || 'N/A'}</td>
-                                                    <td style="padding: 0.5rem; border-bottom: 1px solid var(--gray-100); font-size: 0.875rem;">${enrollment.Email || enrollment.email || 'N/A'}</td>
-                                                    <td style="padding: 0.5rem; border-bottom: 1px solid var(--gray-100); font-size: 0.875rem;">${enrollment.EnrollmentDate ? new Date(enrollment.EnrollmentDate).toLocaleDateString('ar-SA') : (enrollment.enrollmentDate ? new Date(enrollment.enrollmentDate).toLocaleDateString('ar-SA') : 'N/A')}</td>
-                                                </tr>
-                                            `).join('')}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            `;
-                        }
+                    // Filter enrollments for this course
+                    const courseEnrollments = allEnrollments.filter(enrollment => 
+                        enrollment.CourseId === courseId || enrollment.courseId === courseId
+                    );
+                    
+                    console.log(`📋 Enrollments for course ${courseId}:`, courseEnrollments);
+                    
+                    if (courseEnrollments.length === 0) {
+                        enrollmentsDiv.innerHTML = `
+                            <div style="text-align: center; padding: 1rem; color: var(--gray-600);">
+                                <i class="fas fa-info-circle"></i>
+                                لا يوجد طلاب مسجلون في هذه الدورة
+                            </div>
+                        `;
                     } else {
-                        throw new Error('Failed to load enrollments');
+                        enrollmentsDiv.innerHTML = `
+                            <h4 style="margin-bottom: 1rem; color: var(--gray-800);">
+                                <i class="fas fa-users"></i>
+                                الطلاب المسجلون (${courseEnrollments.length})
+                            </h4>
+                            <div style="max-height: 200px; overflow-y: auto;">
+                                <table style="width: 100%; border-collapse: collapse;">
+                                    <thead>
+                                        <tr style="background: var(--gray-100);">
+                                            <th style="padding: 0.5rem; text-align: right; border-bottom: 1px solid var(--gray-200); font-size: 0.875rem;">اسم الطالب</th>
+                                            <th style="padding: 0.5rem; text-align: right; border-bottom: 1px solid var(--gray-200); font-size: 0.875rem;">البريد الإلكتروني</th>
+                                            <th style="padding: 0.5rem; text-align: right; border-bottom: 1px solid var(--gray-200); font-size: 0.875rem;">تاريخ التسجيل</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${courseEnrollments.map(enrollment => `
+                                            <tr>
+                                                <td style="padding: 0.5rem; border-bottom: 1px solid var(--gray-100); font-size: 0.875rem;">${enrollment.StudentName || enrollment.studentName || 'N/A'}</td>
+                                                <td style="padding: 0.5rem; border-bottom: 1px solid var(--gray-100); font-size: 0.875rem;">${enrollment.Email || enrollment.email || 'N/A'}</td>
+                                                <td style="padding: 0.5rem; border-bottom: 1px solid var(--gray-100); font-size: 0.875rem;">${enrollment.EnrollmentDate ? new Date(enrollment.EnrollmentDate).toLocaleDateString('ar-SA') : (enrollment.enrollmentDate ? new Date(enrollment.enrollmentDate).toLocaleDateString('ar-SA') : 'N/A')}</td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        `;
                     }
                 } catch (error) {
                     console.error('❌ Failed to load enrollments:', error);

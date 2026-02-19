@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نتائجي - ExamPro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header
+            style="position: sticky; top: 0; z-index: 1000; background: white; padding: 1rem 0; border-radius: 16px; margin-bottom: 2rem; box-shadow: var(--shadow-lg);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div
+                        style="width: 50px; height: 50px; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-chart-bar" style="color: white; font-size: 1.5rem;"></i>
+                    </div>
+                    <div>
+                        <h1 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-800); margin: 0;">نتائج
+                            الاختبارات</h1>
+                        <p style="color: var(--gray-600); margin: 0; font-size: 0.9rem;">عرض سجل الاختبارات والنتائج</p>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <button class="btn btn-secondary" onclick="window.location.href='dashboard.html'">
+                        <i class="fas fa-arrow-right"></i>
+                        العودة للرئيسية
+                    </button>
+                    <button class="btn btn-secondary" onclick="api.logout()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        تسجيل الخروج
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Stats Overview -->
+        <div class="card mb-4">
+            <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
+                <div style="flex: 1; text-align: center; border-left: 1px solid var(--gray-200);">
+                    <h3 style="color: var(--primary); margin: 0; font-size: 2rem;" id="totalExams">0</h3>
+                    <p style="color: var(--gray-600); margin: 0;">الاختبارات المجتازة</p>
+                </div>
+                <div style="flex: 1; text-align: center; border-left: 1px solid var(--gray-200);">
+                    <h3 style="color: var(--success); margin: 0; font-size: 2rem;" id="averageScore">0%</h3>
+                    <p style="color: var(--gray-600); margin: 0;">متوسط الدرجات</p>
+                </div>
+                <div style="flex: 1; text-align: center;">
+                    <h3 style="color: var(--warning); margin: 0; font-size: 2rem;" id="passedExams">0</h3>
+                    <p style="color: var(--gray-600); margin: 0;">عدد مرات النجاح</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results List -->
+        <div class="card">
+            <div class="card-header" style="justify-content: space-between;">
+                <h2 class="card-title">قائمة النتائج</h2>
+                <!-- Filter/Search -->
+                <div style="display: flex; gap: 1rem;">
+                    <input type="text" id="searchInput" placeholder="بحث باسم الاختبار..." class="form-control"
+                        style="width: 250px;">
+                    <select id="statusFilter" class="form-select" style="width: 150px;">
+                        <option value="all">الكل</option>
+                        <option value="passed">ناجح</option>
+                        <option value="failed">راسب</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="resultsList" style="display: flex; flex-direction: column; gap: 1rem;">
+                <!-- Result items will be loaded here -->
+                <div style="text-align: center; padding: 2rem; color: var(--gray-500);">
+                    <i class="fas fa-spinner fa-spin fa-2x"></i>
+                    <p style="margin-top: 1rem;">جاري تحميل النتائج...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script>
+        // Check authentication
+        if (!checkAuth()) {
+            window.location.href = '../login.html';
+        }
+
+        let allResults = [];
+
+        // Load Results
+        async function loadResults() {
+            try {
+                showLoading('جاري تحميل سجل النتائج...');
+
+                // Get exam history from API
+                const history = await api.getStudentExamHistory();
+                allResults = history || [];
+
+                renderResults(allResults);
+                updateStats(allResults);
+
+            } catch (error) {
+                console.error('Failed to load results:', error);
+                document.getElementById('resultsList').innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: var(--danger);">
+                        <i class="fas fa-exclamation-circle fa-2x"></i>
+                        <p style="margin-top: 1rem;">فشل في تحميل النتائج: ${error.message}</p>
+                        <button class="btn btn-primary" onclick="loadResults()" style="margin-top: 1rem;">إعادة المحاولة</button>
+                    </div>
+                `;
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Render Results List
+        function renderResults(results) {
+            const container = document.getElementById('resultsList');
+
+            if (!results || results.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 3rem; color: var(--gray-500);">
+                        <i class="fas fa-clipboard-check fa-3x" style="opacity: 0.5;"></i>
+                        <h3 style="margin-top: 1rem;">لا توجد نتائج سابقة</h3>
+                        <p>لم تقم بأداء أي اختبارات حتى الآن.</p>
+                        <button class="btn btn-primary" onclick="window.location.href='dashboard.html#availableExams'">عرض الاختبارات المتاحة</button>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = results.map(result => {
+                // Handle mixed case properties
+                const isPassed = result.Passed !== undefined ? result.Passed : result.passed;
+                const percentage = result.Percentage !== undefined ? result.Percentage : result.percentage;
+                const examTitle = result.ExamTitle || result.examTitle;
+                const courseName = result.CourseName || result.courseName;
+                const submittedTime = result.SubmittedTime || result.submittedTime;
+                const examId = result.ExamId || result.examId || result.id;
+
+                const scoreColor = isPassed ? 'var(--success)' : 'var(--danger)';
+                const icon = isPassed ? 'fa-check-circle' : 'fa-times-circle';
+
+                // Ensure percentage is a number before calling toFixed
+                const percentageDisplay = typeof percentage === 'number' ? percentage.toFixed(1) : '0.0';
+
+                return `
+                    <div class="result-card" style="
+                        display: flex; 
+                        align-items: center; 
+                        padding: 1.5rem; 
+                        background: white; 
+                        border: 1px solid var(--gray-200); 
+                        border-radius: 12px; 
+                        transition: all 0.3s ease;
+                        hover: { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+                    ">
+                        <div style="
+                            width: 60px; 
+                            height: 60px; 
+                            background: ${scoreColor}15; 
+                            border-radius: 50%; 
+                            display: flex; 
+                            align-items: center; 
+                            justify-content: center;
+                            margin-left: 1.5rem;
+                        ">
+                            <i class="fas ${icon}" style="color: ${scoreColor}; font-size: 1.5rem;"></i>
+                        </div>
+                        
+                        <div style="flex: 1;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                <div>
+                                    <h3 style="margin: 0; font-size: 1.1rem; color: var(--gray-800);">${examTitle}</h3>
+                                    <span style="
+                                        display: inline-block; 
+                                        padding: 0.25rem 0.75rem; 
+                                        background: var(--gray-100); 
+                                        border-radius: 20px; 
+                                        font-size: 0.8rem; 
+                                        color: var(--gray-600); 
+                                        margin-top: 0.5rem;
+                                    ">
+                                        <i class="fas fa-book"></i> ${courseName}
+                                    </span>
+                                </div>
+                                <div style="text-align: left;">
+                                    <div style="font-size: 1.5rem; font-weight: 800; color: ${scoreColor};">
+                                        ${percentageDisplay}%
+                                    </div>
+                                    <div style="font-size: 0.8rem; color: var(--gray-500);">
+                                        الدرجة النهائية
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div style="
+                                display: flex; 
+                                justify-content: space-between; 
+                                align-items: center; 
+                                margin-top: 1rem; 
+                                padding-top: 1rem; 
+                                border-top: 1px solid var(--gray-100);
+                            ">
+                                <div style="color: var(--gray-500); font-size: 0.9rem;">
+                                    <i class="far fa-calendar-alt"></i> ${formatDate(submittedTime)}
+                                </div>
+                                <button class="btn btn-outline-primary btn-sm" onclick="viewResultDetails(${examId})">
+                                    <i class="fas fa-list-ul"></i>
+                                    تفاصيل الإجابات
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Update Statistics
+        function updateStats(results) {
+            if (!results.length) return;
+
+            const total = results.length;
+            const passed = results.filter(r => (r.Passed !== undefined ? r.Passed : r.passed)).length;
+            const totalScore = results.reduce((acc, curr) => {
+                const p = curr.Percentage !== undefined ? curr.Percentage : curr.percentage;
+                return acc + (typeof p === 'number' ? p : 0);
+            }, 0);
+
+            const avgScore = totalScore / total;
+
+            document.getElementById('totalExams').textContent = total;
+            document.getElementById('passedExams').textContent = passed;
+            document.getElementById('averageScore').textContent = avgScore.toFixed(1) + '%';
+        }
+
+        // Search and Filter
+        function filterResults() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+
+            const filtered = allResults.filter(result => {
+                const examTitle = (result.ExamTitle || result.examTitle || '').toLowerCase();
+                const courseName = (result.CourseName || result.courseName || '').toLowerCase();
+
+                const matchesSearch = examTitle.includes(searchTerm) ||
+                    courseName.includes(searchTerm);
+
+                const isPassed = result.Passed !== undefined ? result.Passed : result.passed;
+
+                const matchesStatus = statusFilter === 'all' ? true :
+                    statusFilter === 'passed' ? isPassed :
+                        !isPassed; // failed
+
+                return matchesSearch && matchesStatus;
+            });
+
+            renderResults(filtered);
+        }
+
+        // Add event listeners for filters
+        document.getElementById('searchInput').addEventListener('input', filterResults);
+        document.getElementById('statusFilter').addEventListener('change', filterResults);
+
+        // View Details function
+        function viewResultDetails(examId) {
+            window.location.href = `result-details.html?id=${examId}`;
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', loadResults);
+    </script>
+</body>
+
+</html>

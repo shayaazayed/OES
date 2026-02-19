@@ -198,6 +198,69 @@ namespace ExamSystem.Controllers
                 return Ok(sampleLogs);
             }
         }
+
+        [HttpGet("enrollments")]
+        public async Task<IActionResult> GetAllEnrollments()
+        {
+            try
+            {
+                var enrollments = await _context.Enrollments
+                    .Include(e => e.Course)
+                    .Include(e => e.Student)
+                    .Select(e => new
+                    {
+                        e.Id,
+                        StudentId = e.StudentId,
+                        StudentName = e.Student.FullName,
+                        Email = e.Student.Email,
+                        CourseId = e.CourseId,
+                        CourseName = e.Course.CourseName,
+                        EnrollmentDate = e.EnrolledDate
+                    })
+                    .OrderByDescending(e => e.EnrollmentDate)
+                    .ToListAsync();
+                
+                return Ok(enrollments);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error fetching enrollments", error = ex.Message });
+            }
+        }
+
+        [HttpGet("results")]
+        public async Task<IActionResult> GetExamResults()
+        {
+            try
+            {
+                // Get all exam results for admin
+                var results = await _context.StudentExams
+                    .Include(se => se.Exam)
+                    .ThenInclude(e => e.Course)
+                    .Include(se => se.Student)
+                    .Where(se => se.Status == "Submitted") // Only submitted exams
+                    .Select(se => new
+                    {
+                        se.Id,
+                        ExamTitle = se.Exam.Title,
+                        CourseName = se.Exam.Course.CourseName,
+                        StudentName = se.Student.FullName,
+                        se.Score,
+                        TotalMarks = se.Exam.TotalMarks,
+                        se.Status,
+                        CompletedDate = se.SubmittedTime,
+                        IsPassed = se.Score >= se.Exam.PassingScore
+                    })
+                    .OrderByDescending(r => r.CompletedDate)
+                    .ToListAsync();
+                
+                return Ok(results);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error fetching results", error = ex.Message });
+            }
+        }
     }
 
     public class CreateUserModel

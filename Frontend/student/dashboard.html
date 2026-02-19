@@ -58,7 +58,8 @@
                     style="width: 60px; height: 60px; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
                     <i class="fas fa-clipboard-list" style="color: white; font-size: 1.5rem;"></i>
                 </div>
-                <h3 style="font-size: 2rem; font-weight: 800; color: var(--warning); margin: 0;" id="availableExamsCount">0
+                <h3 style="font-size: 2rem; font-weight: 800; color: var(--warning); margin: 0;"
+                    id="availableExamsCount">0
                 </h3>
                 <p style="color: var(--gray-600); margin: 0.5rem 0;">الاختبارات المتاحة</p>
                 <div style="color: var(--warning); font-size: 0.9rem;">
@@ -84,7 +85,8 @@
                     style="width: 60px; height: 60px; background: linear-gradient(135deg, #8b5cf6, #7c3aed); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
                     <i class="fas fa-trophy" style="color: white; font-size: 1.5rem;"></i>
                 </div>
-                <h3 style="font-size: 2rem; font-weight: 800; color: var(--secondary); margin: 0;" id="averageScore">0%</h3>
+                <h3 style="font-size: 2rem; font-weight: 800; color: var(--secondary); margin: 0;" id="averageScore">0%
+                </h3>
                 <p style="color: var(--gray-600); margin: 0.5rem 0;">متوسط الدرجات</p>
                 <div style="color: var(--success); font-size: 0.9rem;">
                     <i class="fas fa-arrow-up"></i> +5% هذا الشهر
@@ -106,7 +108,7 @@
                     <i class="fas fa-graduation-cap"></i>
                     دوراتي
                 </button>
-                <button class="btn btn-warning" onclick="showAlert('جاري فتح صفحة النتائج...', 'info')">
+                <button class="btn btn-warning" onclick="window.location.href='results.html'">
                     <i class="fas fa-chart-bar"></i>
                     نتائجي
                 </button>
@@ -172,18 +174,18 @@
                 // Load available exams using API service
                 try {
                     console.log('🔍 Checking available exams...');
-                    
+
                     // First, let's debug the data
                     try {
                         const debugInfo = await api.getStudentDebugInfo();
                         console.log('🐛 Debug info:', debugInfo);
-                        
+
                         console.log(`👤 Current Student ID: ${debugInfo.currentStudentId}`);
                         console.log(`📚 All Students: ${debugInfo.allStudentsCount}`);
                         console.log(`📝 All Enrollments: ${debugInfo.allEnrollmentsCount}`);
                         console.log(`📋 All Exams: ${debugInfo.allExamsCount}`);
                         console.log(`🎯 Student Enrollments: ${debugInfo.studentEnrollmentsCount}`);
-                        
+
                         // Show debug info in UI
                         const debugDiv = document.createElement('div');
                         debugDiv.style.cssText = 'background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 5px; font-family: monospace; font-size: 12px;';
@@ -205,14 +207,14 @@
                             </button>
                         `;
                         document.getElementById('availableExamsList').prepend(debugDiv);
-                        
+
                     } catch (debugError) {
                         console.error('❌ Debug info failed:', debugError);
                     }
-                    
+
                     const availableExams = await api.getStudentAvailableExams();
                     console.log('✅ Available exams loaded:', availableExams);
-                    
+
                     // Debug: Log first exam structure
                     if (availableExams.length > 0) {
                         console.log('🔍 First exam structure:', availableExams[0]);
@@ -258,32 +260,54 @@
 
                     // Calculate average score
                     if (examHistory.length > 0) {
-                        const totalPercentage = examHistory.reduce((sum, exam) => sum + exam.Percentage, 0);
-                        const averagePercentage = (totalPercentage / examHistory.length).toFixed(1);
-                        document.getElementById('averageScore').textContent = averagePercentage + '%';
+                        const validExams = examHistory.filter(exam => 
+                            exam.Percentage !== null && 
+                            exam.Percentage !== undefined && 
+                            !isNaN(exam.Percentage)
+                        );
+                        
+                        if (validExams.length > 0) {
+                            const totalPercentage = validExams.reduce((sum, exam) => sum + exam.Percentage, 0);
+                            const averagePercentage = (totalPercentage / validExams.length).toFixed(1);
+                            document.getElementById('averageScore').textContent = averagePercentage + '%';
+                        } else {
+                            document.getElementById('averageScore').textContent = '0%';
+                        }
                     } else {
                         document.getElementById('averageScore').textContent = '0%';
                     }
 
                     // Display recent results (last 5)
                     const recentResults = examHistory.slice(0, 5);
-                    const recentResultsHtml = recentResults.map(result => `
+                    const recentResultsHtml = recentResults.map(result => {
+                        // Ensure percentage is valid
+                        const percentage = (result.Percentage !== null && result.Percentage !== undefined && !isNaN(result.Percentage)) 
+                            ? result.Percentage.toFixed(1) 
+                            : '0.0';
+                        
+                        // Format date safely
+                        const formattedDate = result.SubmittedTime 
+                            ? formatDate(result.SubmittedTime) 
+                            : 'تاريخ غير متاح';
+                        
+                        return `
                         <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; border-bottom: 1px solid var(--gray-100); hover: background: var(--gray-50);">
                             <div style="width: 40px; height: 40px; background: ${result.Passed ? 'var(--success)' : 'var(--danger)'}; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
                                 <i class="fas ${result.Passed ? 'fa-check' : 'fa-times'}" style="color: white; font-size: 1rem;"></i>
                             </div>
                             <div style="flex: 1;">
-                                <h4 style="margin: 0; font-size: 1rem; color: var(--gray-800);">${result.ExamTitle}</h4>
-                                <p style="margin: 0.25rem 0; color: var(--gray-600); font-size: 0.9rem;">${result.CourseName}</p>
+                                <h4 style="margin: 0; font-size: 1rem; color: var(--gray-800);">${result.ExamTitle || 'اختبار بدون اسم'}</h4>
+                                <p style="margin: 0.25rem 0; color: var(--gray-600); font-size: 0.9rem;">${result.CourseName || 'دورة'}</p>
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                                    <span style="color: var(--gray-500); font-size: 0.8rem;">${formatDate(result.SubmittedTime)}</span>
+                                    <span style="color: var(--gray-500); font-size: 0.8rem;">${formattedDate}</span>
                                     <span style="color: ${result.Passed ? 'var(--success)' : 'var(--danger)'}; font-size: 0.9rem; font-weight: 600;">
-                                        ${result.Percentage.toFixed(1)}%
+                                        ${percentage}%
                                     </span>
                                 </div>
                             </div>
                         </div>
-                    `).join('');
+                    `;
+                    }).join('');
 
                     document.getElementById('recentResults').innerHTML = recentResultsHtml || '<p style="text-align: center; color: var(--gray-500); padding: 2rem;">لا توجد نتائج سابقة</p>';
                 } catch (error) {
@@ -296,13 +320,13 @@
                     console.log('📚 Loading enrolled courses count...');
                     const enrollmentStatus = await api.checkEnrollmentStatus();
                     console.log('✅ Enrollment status loaded:', enrollmentStatus);
-                    
+
                     // Use the actual enrolled courses count from the API
                     const enrolledCount = enrollmentStatus.enrolledCoursesCount || enrollmentStatus.EnrolledCoursesCount || 0;
                     document.getElementById('enrolledCourses').textContent = enrolledCount;
-                    
+
                     console.log(`📊 Enrolled courses count: ${enrolledCount}`);
-                    
+
                     // Display enrolled courses
                     const enrolledCourses = enrollmentStatus.enrolledCourses || [];
                     const enrolledCoursesHtml = enrolledCourses.map(course => `
@@ -319,7 +343,7 @@
                             </button>
                         </div>
                     `).join('');
-                    
+
                     document.getElementById('enrolledCoursesList').innerHTML = enrolledCoursesHtml || '<p style="text-align: center; color: var(--gray-500); padding: 2rem;">لم يتم التسجيل في أي دورة بعد</p>';
                 } catch (error) {
                     console.error('❌ Failed to load enrolled courses:', error);
@@ -340,17 +364,17 @@
             try {
                 console.log('🎓 Enrolling in all courses...');
                 showLoading('جاري التسجيل في جميع الدورات...');
-                
+
                 const result = await api.enrollStudentInAllCourses();
                 console.log('✅ Enrolled in all courses:', result);
-                
+
                 showAlert(`تم التسجيل في ${result.newEnrollments} دورة جديدة!`, 'success');
-                
+
                 // Reload page to see new data
                 setTimeout(() => {
                     window.location.reload();
                 }, 2000);
-                
+
             } catch (error) {
                 console.error('❌ Error enrolling in courses:', error);
                 showAlert('خطأ في التسجيل في الدورات: ' + error.message, 'danger');
@@ -364,17 +388,17 @@
             try {
                 console.log('🌱 Creating test data...');
                 showLoading('جاري إنشاء بيانات تجريبية...');
-                
+
                 const result = await api.createStudentData();
                 console.log('✅ Test data created:', result);
-                
+
                 showAlert('تم إنشاء بيانات تجريبية بنجاح!', 'success');
-                
+
                 // Reload the page to see the new data
                 setTimeout(() => {
                     window.location.reload();
                 }, 2000);
-                
+
             } catch (error) {
                 console.error('❌ Error creating test data:', error);
                 showAlert('خطأ في إنشاء البيانات التجريبية: ' + error.message, 'danger');
@@ -388,17 +412,17 @@
             try {
                 console.log('🔧 Fixing exam dates...');
                 showLoading('جاري إصلاح تواريخ الاختبارات...');
-                
+
                 const result = await api.fixExamDates();
                 console.log('✅ Exam dates fixed:', result);
-                
+
                 showAlert('تم إصلاح تواريخ الاختبارات بنجاح!', 'success');
-                
+
                 // Reload the page to see the updated data
                 setTimeout(() => {
                     window.location.reload();
                 }, 2000);
-                
+
             } catch (error) {
                 console.error('❌ Error fixing exam dates:', error);
                 showAlert('خطأ في إصلاح تواريخ الاختبارات: ' + error.message, 'danger');
@@ -410,20 +434,20 @@
         // View available exams function
         function viewAvailableExams() {
             console.log('👁️ View available exams button clicked');
-            
+
             // Scroll to the available exams section
             const availableExamsSection = document.getElementById('availableExamsList').parentElement.parentElement;
             availableExamsSection.scrollIntoView({ behavior: 'smooth' });
-            
+
             // Highlight the section temporarily
             const originalBg = availableExamsSection.style.background;
             availableExamsSection.style.background = 'var(--primary-light)';
             availableExamsSection.style.transition = 'background 0.3s ease';
-            
+
             setTimeout(() => {
                 availableExamsSection.style.background = originalBg;
             }, 1000);
-            
+
             // Show message if no exams are available
             const availableExamsCount = document.getElementById('availableExamsCount').textContent;
             if (availableExamsCount === '0') {

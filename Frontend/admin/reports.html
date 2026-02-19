@@ -164,7 +164,7 @@
 
                 switch (reportType) {
                     case 'summary':
-                        reportData = await api.getStatistics();
+                        reportData = await api.getAdminStatistics();
                         reportHtml = generateSummaryReport(reportData);
                         break;
                     case 'users':
@@ -180,7 +180,7 @@
                         reportHtml = generateExamsReport(reportData);
                         break;
                     case 'results':
-                        reportData = await api.getExamResults();
+                        reportData = await api.getAdminExamResults();
                         reportHtml = generateResultsReport(reportData);
                         break;
                     default:

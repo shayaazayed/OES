@@ -151,8 +151,9 @@
                     <textarea id="questionText" class="form-control" rows="3" required></textarea>
                 </div>
                 <div style="margin-bottom: 1rem;">
-                    <label class="form-label">الدرجة</label>
-                    <input type="number" id="questionMarks" class="form-control" value="1" min="1" required>
+                    <label class="form-label">الدرجة (اتركه فارغاً للحساب التلقائي)</label>
+                    <input type="number" id="questionMarks" class="form-control" min="1">
+                    <small style="color: var(--gray-500);">إذا تركت هذا الحقل فارغاً، سيتم حساب الدرجة تلقائياً بناءً على مجموع درجات الاختبار وعدد الأسئلة</small>
                 </div>
                 <div style="margin-bottom: 1rem;">
                     <label class="form-label">نوع السؤال</label>
@@ -184,6 +185,7 @@
         let currentExam = null;
         let isEditingQuestion = false;
         let currentQuestionId = null;
+        let currentQuestions = []; // Store questions for counting
 
         // Helper to get Exam ID reliably from MULTIPLE sources
         function getExamId() {
@@ -336,6 +338,7 @@
 
                 if (response.ok) {
                     const questions = await response.json();
+                    currentQuestions = questions; // Store questions for counting
                     displayQuestions(questions);
                 } else {
                     document.getElementById('questionsList').innerHTML = '<p class="text-center text-danger">فشل تحميل الأسئلة</p>';
@@ -365,7 +368,7 @@
                 const optD = q.OptionD || q.optionD || '-';
 
                 return `
-                <div style="background: var(--gray-50); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border: 1px solid var(--gray-200);">
+                <div class="question-card" style="background: var(--gray-50); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border: 1px solid var(--gray-200);">
                     <div style="display: flex; justify-content: space-between; align-items: start;">
                         <div>
                             <span style="font-weight: bold; color: var(--primary);">سؤال ${order}:</span>
@@ -460,13 +463,26 @@
             }
 
             const questionText = document.getElementById('questionText').value;
-            const marks = parseInt(document.getElementById('questionMarks').value);
+            const marksInput = document.getElementById('questionMarks').value;
             const type = document.getElementById('questionType').value;
             const correctRadio = document.querySelector('input[name="correctOption"]:checked');
 
             if (!correctRadio) {
                 showAlert('يرجى تحديد الإجابة الصحيحة', 'warning');
                 return;
+            }
+
+            // Calculate marks automatically if not provided
+            let marks;
+            if (marksInput === '' || marksInput === null || isNaN(parseInt(marksInput))) {
+                // Get current exam total marks and calculate auto marks
+                const totalMarks = currentExam?.totalMarks || currentExam?.TotalMarks || 0;
+                // Get current number of questions from stored array (we'll add 1 for the new question)
+                const questionsCount = currentQuestions?.length || 0;
+                marks = questionsCount > 0 ? Math.ceil(totalMarks / (questionsCount + 1)) : 1;
+                console.log('🔄 Auto-calculated marks:', marks, '| Total:', totalMarks, '| Questions:', questionsCount);
+            } else {
+                marks = parseInt(marksInput);
             }
 
             const correctAnswer = correctRadio.value;
@@ -507,6 +523,12 @@
 
                 if (response.ok) {
                     showAlert('تم إضافة السؤال بنجاح', 'success');
+                    
+                    // Automatically update exam total marks if marks were auto-calculated
+                    if (marksInput === '' || marksInput === null || isNaN(parseInt(marksInput))) {
+                        await updateExamTotalMarks();
+                    }
+                    
                     hideAddQuestionModal();
                     loadQuestions();
                 } else {
@@ -560,32 +582,47 @@
                     currentExam.durationMinutes = duration;
                     currentExam.passingScore = passingScore;
                 }
-
             } catch (error) {
-                console.error('Error updating exam:', error);
-                showAlert('فشل تحديث المعلومات: ' + error.message, 'danger');
+                console.error('Error updating exam info:', error);
+                showAlert('فشل تحديث المعلومات', 'danger');
             }
         });
 
-        // Delete Question
-        async function deleteQuestion(id) {
-            if (!confirm('هل أنت متأكد من حذف هذا السؤال؟')) return;
+        // Update Exam Total Marks
+        async function updateExamTotalMarks() {
+            const activeId = getExamId();
+            if (!activeId) return;
 
             try {
-                const response = await fetch(`${api.baseURL}/teacher/questions/${id}`, {
-                    method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${api.token}` }
+                const totalMarks = currentQuestions.reduce((sum, q) => {
+                    const marks = parseInt(q.Marks || q.marks || 1);
+                    return sum + marks;
+                }, 0);
+
+                const response = await api.request(`/teacher/exams/${activeId}`, {
+                    method: 'PUT',
+                    body: JSON.stringify({
+                        Title: currentExam?.title || currentExam?.Title || '',
+                        Description: currentExam?.description || currentExam?.Description || '',
+                        DurationMinutes: currentExam?.durationMinutes || currentExam?.DurationMinutes || 60,
+                        TotalMarks: totalMarks,
+                        PassingScore: currentExam?.passingScore || currentExam?.PassingScore || 50,
+                        StartDate: currentExam?.startDate || currentExam?.StartDate,
+                        EndDate: currentExam?.endDate || currentExam?.EndDate
+                    })
                 });
 
                 if (response.ok) {
-                    showAlert('تم حذف السؤال', 'success');
-                    loadQuestions();
+                    console.log('✅ Total marks updated successfully:', totalMarks);
+                    if (currentExam) {
+                        currentExam.totalMarks = totalMarks;
+                        currentExam.TotalMarks = totalMarks;
+                    }
                 } else {
-                    showAlert('فشل حذف السؤال', 'danger');
+                    console.log('⚠️ Total marks update skipped - backend may not support this field');
                 }
             } catch (error) {
-                console.error(error);
-                showAlert('حدث خطأ', 'danger');
+                console.log('⚠️ Total marks update skipped:', error.message);
             }
         }
 

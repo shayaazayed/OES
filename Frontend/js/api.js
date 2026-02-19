@@ -10,7 +10,7 @@ class ApiService {
       window.location.hostname === "127.0.0.1";
 
     // Set base URL based on environment
-    this.baseURL = "http://localhost:5000/api";
+    this.baseURL = this.isDevelopment ? "http://localhost:5000/api" : "https://localhost:7121/api";
 
     this.token = localStorage.getItem("token");
     this.user = null;
@@ -227,6 +227,21 @@ class ApiService {
   async getExamResults() {
     // ENDPOINT: /teacher/results (Teacher controller - Admin has access)
     return await this.request("/teacher/results");
+  }
+
+  async getAdminExamResults() {
+    // ENDPOINT: /admin/results (Admin controller)
+    return await this.request("/admin/results");
+  }
+
+  async getAdminStatistics() {
+    // ENDPOINT: /admin/statistics (Admin controller)
+    return await this.request("/admin/statistics");
+  }
+
+  async getAllEnrollments() {
+    // ENDPOINT: /admin/enrollments (Admin controller)
+    return await this.request("/admin/enrollments");
   }
 
   async getCourseById(id) {

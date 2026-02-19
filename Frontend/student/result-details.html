@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تفاصيل النتيجة - ExamPro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .question-card {
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .option-item {
+            padding: 1rem;
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .option-item.correct {
+            background-color: #d1fae5;
+            border-color: #10b981;
+            color: #065f46;
+        }
+
+        .option-item.incorrect {
+            background-color: #fee2e2;
+            border-color: #ef4444;
+            color: #991b1b;
+        }
+
+        .option-item.user-selected {
+            border-width: 2px;
+        }
+
+        .badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-danger {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header
+            style="position: sticky; top: 0; z-index: 1000; background: white; padding: 1rem 0; border-radius: 16px; margin-bottom: 2rem; box-shadow: var(--shadow-lg);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div
+                        style="width: 50px; height: 50px; background: linear-gradient(135deg, #3b82f6, #2563eb); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-file-alt" style="color: white; font-size: 1.5rem;"></i>
+                    </div>
+                    <div>
+                        <h1 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-800); margin: 0;">تفاصيل
+                            النتيجة</h1>
+                        <p style="color: var(--gray-600); margin: 0; font-size: 0.9rem;">مراجعة إجابات الاختبار</p>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <button class="btn btn-secondary" onclick="window.location.href='results.html'">
+                        <i class="fas fa-arrow-right"></i>
+                        العودة للنتائج
+                    </button>
+                    <button class="btn btn-primary" onclick="window.print()">
+                        <i class="fas fa-print"></i>
+                        طباعة
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <div id="loading" style="text-align: center; padding: 4rem;">
+            <i class="fas fa-spinner fa-spin fa-3x" style="color: var(--primary);"></i>
+            <p style="margin-top: 1rem; color: var(--gray-600);">جاري تحميل تفاصيل الاختبار...</p>
+        </div>
+
+        <div id="content" style="display: none;">
+            <!-- Exam Overview Card -->
+            <div class="card mb-4" style="background: linear-gradient(to right, white, #f8fafc);">
+                <div
+                    style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 2rem;">
+                    <div>
+                        <h2 style="font-size: 1.8rem; font-weight: 800; color: var(--gray-900); margin: 0;"
+                            id="examTitle">عنوان الاختبار</h2>
+                        <p style="color: var(--gray-600); margin: 0.5rem 0;" id="courseName">اسم الدورة</p>
+                        <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                            <span class="badge badge-secondary" id="examDate">
+                                <i class="far fa-calendar-alt"></i> 2024-01-01
+                            </span>
+                            <span class="badge badge-secondary" id="duration">
+                                <i class="far fa-clock"></i> 60 دقيقة
+                            </span>
+                        </div>
+                    </div>
+
+                    <div style="text-align: center; min-width: 150px;">
+                        <div style="position: relative; display: inline-block;">
+                            <svg width="120" height="120" viewBox="0 0 120 120">
+                                <circle cx="60" cy="60" r="54" fill="none" stroke="#e5e7eb" stroke-width="12" />
+                                <circle id="scoreCircle" cx="60" cy="60" r="54" fill="none" stroke="var(--primary)"
+                                    stroke-width="12" stroke-dasharray="339.292" stroke-dashoffset="0"
+                                    transform="rotate(-90 60 60)" />
+                            </svg>
+                            <div
+                                style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+                                <span style="font-size: 1.5rem; font-weight: 800; color: var(--gray-800);"
+                                    id="scorePercentage">0%</span>
+                                <div style="font-size: 0.8rem; color: var(--gray-500);">النتيجة</div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 0.5rem; font-weight: 700; font-size: 1.2rem;" id="passStatus"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Questions Review -->
+            <div id="questionsList">
+                <!-- Questions will be dynamically inserted here -->
+            </div>
+        </div>
+
+        <div id="error" style="display: none; text-align: center; padding: 4rem; color: var(--danger);">
+            <i class="fas fa-exclamation-triangle fa-3x"></i>
+            <h3 style="margin-top: 1rem;">خطأ في تحميل النتيجة</h3>
+            <p id="errorMessage">تعذر العثور على تفاصيل هذا الاختبار.</p>
+            <button class="btn btn-primary" onclick="window.location.reload()" style="margin-top: 1rem;">إعادة
+                المحاولة</button>
+        </div>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script>
+        // Check Authentication
+        if (!checkAuth()) {
+            window.location.href = '../login.html';
+        }
+
+        // Get Exam ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const examId = urlParams.get('id');
+
+        if (!examId) {
+            window.location.href = 'results.html';
+        }
+
+        async function loadResultDetails() {
+            try {
+                // Fetch result details
+                const result = await api.getStudentExamResult(examId);
+                console.log('Result Details:', result);
+
+                if (!result) throw new Error('Result not found');
+
+                renderExamOverview(result);
+
+                // Handle different response structures (Answers vs Questions)
+                const questionsOrAnswers = result.Answers || result.answers || result.Questions || result.questions || [];
+                renderQuestions(questionsOrAnswers);
+
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('content').style.display = 'block';
+
+            } catch (error) {
+                console.error('Error loading result:', error);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error').style.display = 'block';
+                document.getElementById('errorMessage').textContent = error.message || 'حدث خطأ غير متوقع';
+            }
+        }
+
+        function renderExamOverview(result) {
+            const examTitle = result.ExamTitle || result.examTitle || 'اختبار';
+            const courseName = result.CourseName || result.courseName || '';
+            const submittedTime = result.SubmittedTime || result.submittedTime;
+            const duration = result.Duration || result.duration || 0;
+            const percentage = result.Percentage !== undefined ? result.Percentage : (result.percentage !== undefined ? result.percentage : 0);
+            const isPassed = result.Passed !== undefined ? result.Passed : result.passed;
+
+            document.getElementById('examTitle').textContent = examTitle;
+            document.getElementById('courseName').textContent = courseName;
+
+            // Format time safely
+            const formattedTime = submittedTime ? formatDate(submittedTime) : 'غير متوفر';
+            document.getElementById('examDate').innerHTML = `<i class="far fa-calendar-alt"></i> ${formattedTime}`;
+
+            document.getElementById('duration').innerHTML = `<i class="far fa-clock"></i> ${duration} دقيقة`;
+
+            // Ensure percentage is a number
+            const percentageDisplay = typeof percentage === 'number' ? percentage.toFixed(1) : '0.0';
+            document.getElementById('scorePercentage').textContent = `${percentageDisplay}%`;
+
+            // Update circle progress
+            const circle = document.getElementById('scoreCircle');
+            const circumference = 339.292;
+            const offset = circumference - ((typeof percentage === 'number' ? percentage : 0) / 100) * circumference;
+            circle.style.strokeDashoffset = offset;
+
+            // Pass status
+            const statusDiv = document.getElementById('passStatus');
+            statusDiv.textContent = isPassed ? 'ناجح' : 'راسب';
+            statusDiv.style.color = isPassed ? 'var(--success)' : 'var(--danger)';
+            circle.style.stroke = isPassed ? 'var(--success)' : 'var(--danger)';
+        }
+
+        function renderQuestions(items) {
+            const container = document.getElementById('questionsList');
+
+            if (!items || items.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: var(--gray-500);">لا توجد تفاصيل للأسئلة متاحة.</p>';
+                return;
+            }
+
+            container.innerHTML = items.map((item, index) => {
+                // Handle mixed casing and structures
+                const questionText = item.QuestionText || item.questionText || item.Text || item.text || '';
+                const isCorrect = item.IsCorrect !== undefined ? item.IsCorrect : item.isCorrect;
+                const explanation = item.Explanation || item.explanation;
+
+                // Determine selected and correct answers
+                // API might return letters (String) or IDs (Int) depending on endpoint
+                // But for 'Answers' endpoint it returns Letter
+                const selectedAns = item.SelectedAnswer || item.selectedAnswer;
+                const correctAns = item.CorrectAnswer || item.correctAnswer;
+                // Note: correctAns might be "A" or ID depending on object type. 
+                // Using loose comparison for IDs if needed, but strings are safer.
+
+                // Prepare options array
+                let options = [];
+
+                // check if we have flat options (OptionA, OptionB...)
+                if (item.OptionA || item.optionA) {
+                    options = [
+                        { id: 'A', text: item.OptionA || item.optionA },
+                        { id: 'B', text: item.OptionB || item.optionB },
+                        { id: 'C', text: item.OptionC || item.optionC },
+                        { id: 'D', text: item.OptionD || item.optionD }
+                    ].filter(opt => opt.text);
+                } else if (item.Options || item.options) {
+                    // Nested options array structure
+                    const rawOptions = item.Options || item.options || [];
+                    options = rawOptions.map(opt => ({
+                        id: opt.Id || opt.id, // Assuming ID is used for matching
+                        text: opt.Text || opt.text
+                    }));
+                }
+
+                // Build options HTML
+                const optionsHtml = options.map(opt => {
+                    let className = 'option-item';
+                    let icon = '<i class="far fa-circle"></i>';
+
+                    const isSelected = opt.id == selectedAns; // Loose equality for number/string mix
+                    const isTheCorrectOne = opt.id == correctAns;
+
+                    // Check if this option is the correct answer
+                    if (isTheCorrectOne) {
+                        className += ' correct';
+                        icon = '<i class="fas fa-check-circle"></i>';
+                    }
+
+                    // Check if this option was selected by user
+                    if (isSelected) {
+                        className += ' user-selected';
+                        // If selected and incorrect, mark as incorrect
+                        if (!isTheCorrectOne) {
+                            className += ' incorrect';
+                            icon = '<i class="fas fa-times-circle"></i>';
+                        }
+                    }
+
+                    return `
+                        <div class="${className}">
+                            <div style="width: 30px; display: flex; justify-content: center;">${icon}</div>
+                            <div>${opt.text}</div>
+                        </div>
+                    `;
+                }).join('');
+
+                const validationBadge = isCorrect ?
+                    '<span class="badge badge-success">إجابة صحيحة</span>' :
+                    '<span class="badge badge-danger">إجابة خاطئة</span>';
+
+                const borderColor = isCorrect ? 'var(--success)' : 'var(--danger)';
+
+                return `
+                    <div class="question-card" style="border-right: 4px solid ${borderColor}">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                            <h3 style="font-size: 1.1rem; margin: 0;">
+                                <span style="color: var(--gray-500); margin-left: 0.5rem;">س ${index + 1}:</span>
+                                ${questionText}
+                            </h3>
+                            ${validationBadge}
+                        </div>
+                        
+                        <div class="options-list">
+                            ${optionsHtml}
+                        </div>
+                        
+                        ${explanation ? `
+                        <div style="background: var(--gray-50); padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+                            <div style="font-size: 0.9rem; color: var(--gray-600);">
+                                <strong>توضيح:</strong> ${explanation}
+                            </div>
+                        </div>` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', loadResultDetails);
+    </script>
+</body>
+
+</html>

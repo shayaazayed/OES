@@ -32,6 +32,73 @@
             </div>
         </header>
 
+        <!-- Search and Filter Section -->
+        <div class="card" style="margin-bottom: 2rem;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 1rem; align-items: end; flex-wrap: wrap;">
+                <!-- Student Name Search -->
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--gray-700);">اسم الطالب</label>
+                    <div style="position: relative;">
+                        <i class="fas fa-user" style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); color: var(--gray-400);"></i>
+                        <input 
+                            type="text" 
+                            id="studentNameInput" 
+                            placeholder="ابحث عن اسم الطالب..."
+                            style="width: 100%; padding: 0.75rem 3rem 0.75rem 1rem; border: 2px solid var(--gray-200); border-radius: 8px; font-size: 1rem; transition: border-color 0.3s, box-shadow 0.3s;"
+                            oninput="filterResults()"
+                            onfocus="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 0 0 3px rgba(99, 102, 241, 0.1)';"
+                            onblur="this.style.borderColor='var(--gray-200)'; this.style.boxShadow='none';"
+                        >
+                    </div>
+                </div>
+
+                <!-- Exam Filter -->
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--gray-700);">الاختبار</label>
+                    <div style="position: relative;">
+                        <i class="fas fa-clipboard-list" style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); color: var(--gray-400);"></i>
+                        <select 
+                            id="examFilter" 
+                            style="width: 100%; padding: 0.75rem 3rem 0.75rem 1rem; border: 2px solid var(--gray-200); border-radius: 8px; font-size: 1rem; background: white; cursor: pointer; transition: border-color 0.3s, box-shadow 0.3s;"
+                            onchange="filterResults()"
+                            onfocus="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 0 0 3px rgba(99, 102, 241, 0.1)';"
+                            onblur="this.style.borderColor='var(--gray-200)'; this.style.boxShadow='none';"
+                        >
+                            <option value="">جميع الاختبارات</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Course Filter -->
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--gray-700);">الدورة</label>
+                    <div style="position: relative;">
+                        <i class="fas fa-graduation-cap" style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); color: var(--gray-400);"></i>
+                        <select 
+                            id="courseFilter" 
+                            style="width: 100%; padding: 0.75rem 3rem 0.75rem 1rem; border: 2px solid var(--gray-200); border-radius: 8px; font-size: 1rem; background: white; cursor: pointer; transition: border-color 0.3s, box-shadow 0.3s;"
+                            onchange="filterResults()"
+                            onfocus="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 0 0 3px rgba(99, 102, 241, 0.1)';"
+                            onblur="this.style.borderColor='var(--gray-200)'; this.style.boxShadow='none';"
+                        >
+                            <option value="">جميع الدورات</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Clear Filters Button -->
+                <div>
+                    <button class="btn btn-primary" onclick="clearAllFilters()" style="display: flex; align-items: center; gap: 0.5rem; height: 44px;">
+                        <i class="fas fa-times"></i>
+                        مسح الكل
+                    </button>
+                </div>
+            </div>
+            <div id="searchStats" style="margin-top: 1rem; color: var(--gray-600); font-size: 0.9rem; display: none;">
+                تم العثور على <span id="resultsCount" style="font-weight: bold; color: var(--primary);">0</span> نتيجة
+            </div>
+        </div>
+
         <!-- Results List -->
         <div class="card">
             <div id="resultsList">
@@ -42,6 +109,10 @@
 
     <script src="../js/api.js"></script>
     <script>
+        // Global variables
+        let allResults = [];
+        let filteredResults = [];
+
         // Initialize
         document.addEventListener('DOMContentLoaded', async () => {
             if (!checkAuth() || !api.isTeacher()) {
@@ -66,6 +137,9 @@
 
                 if (response.ok) {
                     const results = await response.json();
+                    allResults = results;
+                    filteredResults = results;
+                    populateFilters(results);
                     displayResults(results);
                 } else {
                     document.getElementById('resultsList').innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--danger);">فشل تحميل النتائج</div>';
@@ -76,10 +150,85 @@
             }
         }
 
+        // Populate filter dropdowns with unique values
+        function populateFilters(results) {
+            const examFilter = document.getElementById('examFilter');
+            const courseFilter = document.getElementById('courseFilter');
+            
+            // Get unique exams
+            const uniqueExams = [...new Set(results.map(r => r.ExamTitle || r.examTitle || 'غير معروف'))];
+            examFilter.innerHTML = '<option value="">جميع الاختبارات</option>' + 
+                uniqueExams.map(exam => `<option value="${exam}">${exam}</option>`).join('');
+            
+            // Get unique courses
+            const uniqueCourses = [...new Set(results.map(r => r.CourseName || r.courseName || '-').filter(c => c !== '-'))];
+            courseFilter.innerHTML = '<option value="">جميع الدورات</option>' + 
+                uniqueCourses.map(course => `<option value="${course}">${course}</option>`).join('');
+        }
+
+        // Filter results based on all filter inputs
+        function filterResults() {
+            const studentName = document.getElementById('studentNameInput').value.toLowerCase().trim();
+            const selectedExam = document.getElementById('examFilter').value;
+            const selectedCourse = document.getElementById('courseFilter').value;
+            
+            filteredResults = allResults.filter(result => {
+                const student = (result.StudentName || result.studentName || '').toLowerCase();
+                const exam = result.ExamTitle || result.examTitle || 'غير معروف';
+                const course = result.CourseName || result.courseName || '-';
+                
+                // Check student name filter
+                const studentMatch = studentName === '' || student.includes(studentName);
+                
+                // Check exam filter
+                const examMatch = selectedExam === '' || exam === selectedExam;
+                
+                // Check course filter
+                const courseMatch = selectedCourse === '' || course === selectedCourse;
+                
+                return studentMatch && examMatch && courseMatch;
+            });
+            
+            displayResults(filteredResults);
+            updateSearchStats();
+        }
+
+        // Clear all filters
+        function clearAllFilters() {
+            document.getElementById('studentNameInput').value = '';
+            document.getElementById('examFilter').value = '';
+            document.getElementById('courseFilter').value = '';
+            filteredResults = allResults;
+            displayResults(allResults);
+            updateSearchStats();
+        }
+
+        // Update search statistics
+        function updateSearchStats() {
+            const searchStats = document.getElementById('searchStats');
+            const resultsCount = document.getElementById('resultsCount');
+            const hasActiveFilter = 
+                document.getElementById('studentNameInput').value.trim() !== '' ||
+                document.getElementById('examFilter').value !== '' ||
+                document.getElementById('courseFilter').value !== '';
+            
+            if (hasActiveFilter) {
+                searchStats.style.display = 'block';
+                resultsCount.textContent = filteredResults.length;
+            } else {
+                searchStats.style.display = 'none';
+            }
+        }
+
         function displayResults(results) {
             const container = document.getElementById('resultsList');
             if (!results || results.length === 0) {
-                container.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--gray-600);">لا توجد نتائج اختبارات حتى الآن.</div>';
+                const searchTerm = document.getElementById('studentNameInput').value.trim();
+                if (searchTerm !== '') {
+                    container.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--gray-600);">لا توجد نتائج مطابقة لبحثك.</div>';
+                } else {
+                    container.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--gray-600);">لا توجد نتائج اختبارات حتى الآن.</div>';
+                }
                 return;
             }
 
