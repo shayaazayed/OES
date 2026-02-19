@@ -10,7 +10,8 @@ class ApiService {
       window.location.hostname === "127.0.0.1";
 
     // Set base URL based on environment
-    this.baseURL = this.isDevelopment ? "http://localhost:5000/api" : "https://localhost:7121/api";
+    // For production (Railway), use relative path /api which nginx will proxy
+    this.baseURL = this.isDevelopment ? "http://localhost:5000/api" : "/api";
 
     this.token = localStorage.getItem("token");
     this.user = null;

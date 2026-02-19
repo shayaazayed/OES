@@ -46,12 +46,38 @@ namespace ExamSystem.Data
                 return;
             }
 
-            // Get existing teachers
+            // Get existing teachers or create default teachers
             var teachers = await _context.Users.Where(u => u.UserType == "Teacher").ToListAsync();
+            
             if (!teachers.Any())
             {
-                Console.WriteLine("No teachers found, skipping course seeding...");
-                return;
+                Console.WriteLine("No teachers found, creating default teachers...");
+                
+                // Create default teachers
+                var defaultTeachers = new List<User>
+                {
+                    new User
+                    {
+                        Username = "teacher1",
+                        PasswordHash = "password123",
+                        Email = "teacher1@exam.com",
+                        FullName = "معلم первый",
+                        UserType = "Teacher"
+                    },
+                    new User
+                    {
+                        Username = "teacher2",
+                        PasswordHash = "password123",
+                        Email = "teacher2@exam.com",
+                        FullName = "معلم الثاني",
+                        UserType = "Teacher"
+                    }
+                };
+                
+                await _context.Users.AddRangeAsync(defaultTeachers);
+                await _context.SaveChangesAsync();
+                teachers = await _context.Users.Where(u => u.UserType == "Teacher").ToListAsync();
+                Console.WriteLine($"✅ Created {teachers.Count} teachers");
             }
 
             var courses = new List<Course>
@@ -464,6 +490,46 @@ namespace ExamSystem.Data
             Console.WriteLine("👥 Seeding student exams and results...");
 
             var students = await _context.Users.Where(u => u.UserType == "Student").ToListAsync();
+            
+            // Create default students if none exist
+            if (!students.Any())
+            {
+                Console.WriteLine("No students found, creating default students...");
+                
+                var defaultStudents = new List<User>
+                {
+                    new User
+                    {
+                        Username = "student1",
+                        PasswordHash = "password123",
+                        Email = "student1@exam.com",
+                        FullName = "طالب اول",
+                        UserType = "Student"
+                    },
+                    new User
+                    {
+                        Username = "student2",
+                        PasswordHash = "password123",
+                        Email = "student2@exam.com",
+                        FullName = "طالب ثاني",
+                        UserType = "Student"
+                    },
+                    new User
+                    {
+                        Username = "student3",
+                        PasswordHash = "password123",
+                        Email = "student3@exam.com",
+                        FullName = "طالب ثالث",
+                        UserType = "Student"
+                    }
+                };
+                
+                await _context.Users.AddRangeAsync(defaultStudents);
+                await _context.SaveChangesAsync();
+                students = await _context.Users.Where(u => u.UserType == "Student").ToListAsync();
+                Console.WriteLine($"✅ Created {students.Count} students");
+            }
+            
             var exams = await _context.Exams.Include(e => e.Questions).ToListAsync();
 
             if (!students.Any() || !exams.Any())
