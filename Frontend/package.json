@@ -1,0 +1,12 @@
+{
+  "name": "exam-system-frontend",
+  "version": "1.0.0",
+  "description": "Simple Online Exam System - Frontend",
+  "scripts": {
+    "start": "serve -s .",
+    "build": "echo 'Static files - no build needed'"
+  },
+  "dependencies": {
+    "serve": "^14.2.0"
+  }
+}

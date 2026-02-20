@@ -107,6 +107,10 @@ namespace ExamSystem
 
             var app = builder.Build();
 
+            // Configure URL for Railway/Production
+            var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
+            builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+
             // Middleware pipeline
             if (app.Environment.IsDevelopment())
             {
